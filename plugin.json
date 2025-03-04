@@ -1,0 +1,11 @@
+﻿{
+  "Group": "Payment methods",
+  "FriendlyName": "Viva Payments",
+  "SystemName": "Payments.VivaPayments",
+  "Version": "4.80.01",
+  "SupportedVersions": [ "4.80" ],
+  "Author": "Nikos Methenitis - nmethenitis@gmail.com",
+  "DisplayOrder": -1,
+  "FileName": "Nop.Plugin.Payments.VivaPayments.dll",
+  "Description": "Viva Payments nopcommerce plugin."
+}
