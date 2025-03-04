@@ -9,10 +9,10 @@
     <div class="cards-group">
         <div class="card card-default">
             <div class="card-body">
-                <p>Viva wallet api settings</p>
+                <p>Viva Payments Smat Checkout Settings</p>
                 <div class="form-group row">
                     <div class="col-md-3">
-                        <nop-override-store-checkbox asp-for="SourceCode_OvverideForStore" asp-input="SourceCode" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-override-store-checkbox asp-for="SourceCode_OverrideForStore" asp-input="SourceCode" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                         <nop-label asp-for="SourceCode" />
                     </div>
                     <div class="col-md-9">
@@ -20,11 +20,9 @@
                         <span asp-validation-for="SourceCode"></span>
                     </div>
                 </div>
-
-
                 <div class="form-group row">
                     <div class="col-md-3">
-                        <nop-override-store-checkbox asp-for="MerchantId_OvverideForStore" asp-input="MerchantId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-override-store-checkbox asp-for="MerchantId_OverrideForStore" asp-input="MerchantId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
                         <nop-label asp-for="MerchantId" />
                     </div>
                     <div class="col-md-9">
@@ -32,61 +30,44 @@
                         <span asp-validation-for="MerchantId"></span>
                     </div>
                 </div>
-
-
                 <div class="form-group row">
                     <div class="col-md-3">
-                        <nop-override-store-checkbox asp-for="BaseApiUrl_OvverideForStore" asp-input="BaseApiUrl" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
-                        <nop-label asp-for="BaseApiUrl" />
+                        <nop-override-store-checkbox asp-for="AuthUrl_OverrideForStore" asp-input="AuthUrl" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="AuthUrl" />
                     </div>
                     <div class="col-md-9">
-                        <nop-editor asp-for="BaseApiUrl" />
-                        <span asp-validation-for="BaseApiUrl"></span>
+                        <nop-editor asp-for="AuthUrl" />
+                        <span asp-validation-for="AuthUrl"></span>
                     </div>
                 </div>
-
                 <div class="form-group row">
                     <div class="col-md-3">
-                        <nop-override-store-checkbox asp-for="PaymentsUrl_OvverideForStore" asp-input="PaymentsUrl" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
-                        <nop-label asp-for="PaymentsUrl" />
+                        <nop-override-store-checkbox asp-for="OrdersUrl_OverrideForStore" asp-input="OrdersUrl" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="OrdersUrl" />
                     </div>
                     <div class="col-md-9">
-                        <nop-editor asp-for="PaymentsUrl" />
-                        <span asp-validation-for="PaymentsUrl"></span>
+                        <nop-editor asp-for="OrdersUrl" />
+                        <span asp-validation-for="OrdersUrl"></span>
                     </div>
                 </div>
-
-
                 <div class="form-group row">
                     <div class="col-md-3">
-                        <nop-override-store-checkbox asp-for="PaymentsCreateOrderUrl_OvverideForStore" asp-input="PaymentsCreateOrderUrl" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
-                        <nop-label asp-for="PaymentsCreateOrderUrl" />
+                        <nop-override-store-checkbox asp-for="ClientId_OverrideForStore" asp-input="ClientId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="ClientId" />
                     </div>
                     <div class="col-md-9">
-                        <nop-editor asp-for="PaymentsCreateOrderUrl" />
-                        <span asp-validation-for="PaymentsCreateOrderUrl"></span>
+                        <nop-editor asp-for="ClientId" />
+                        <span asp-validation-for="ClientId"></span>
                     </div>
                 </div>
-
                 <div class="form-group row">
                     <div class="col-md-3">
-                        <nop-override-store-checkbox asp-for="ApiKey_OvverideForStore" asp-input="ApiKey" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
-                        <nop-label asp-for="ApiKey" />
+                        <nop-override-store-checkbox asp-for="ClientSecret_OverrideForStore" asp-input="ClientSecret" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="ClientSecret" />
                     </div>
                     <div class="col-md-9">
-                        <nop-editor asp-for="ApiKey" />
-                        <span asp-validation-for="ApiKey"></span>
-                    </div>
-                </div>
-
-                <div class="form-group row">
-                    <div class="col-md-3">
-                        <nop-override-store-checkbox asp-for="PublicKey_OvverideForStore" asp-input="PublicKey" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
-                        <nop-label asp-for="PublicKey" />
-                    </div>
-                    <div class="col-md-9">
-                        <nop-editor asp-for="PublicKey" />
-                        <span asp-validation-for="PublicKey"></span>
+                        <nop-editor asp-for="ClientSecret" />
+                        <span asp-validation-for="ClientSecret"></span>
                     </div>
                 </div>
                 <div class="form-group row">

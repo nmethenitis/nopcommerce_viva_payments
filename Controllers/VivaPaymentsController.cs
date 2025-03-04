@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Plugin.Payments.VivaPayments.Models;
@@ -51,34 +52,23 @@ public class VivaPaymentsController : BasePaymentController
     public async Task<IActionResult> Configure(){
         //load settings for a chosen store scope
         var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
-        var manualPaymentSettings = await _settingService.LoadSettingAsync<VivaPaymentsSettings>(storeScope);
+        var vivaPaymentSettings = await _settingService.LoadSettingAsync<VivaPaymentsSettings>(storeScope);
 
         var model = new ConfigurationModel{
-            VivaCheckoutUrl = manualPaymentSettings.VivaCheckoutUrl,
-            ApiKey = manualPaymentSettings.ApiKey,
-            ApiPassword = manualPaymentSettings.ApiPassword,
-            SourceCode = manualPaymentSettings.SourceCode,
-            VivaWalletEndPoint = manualPaymentSettings.VivaWalletEndPoint,
-            ActiveStoreScopeConfiguration = storeScope,
-            BaseApiUrl = manualPaymentSettings.BaseApiUrl,
-            MerchantId = manualPaymentSettings.MerchantId,
-            PaymentsCreateOrderUrl = manualPaymentSettings.PaymentsCreateOrderUrl,
-            PaymentsUrl = manualPaymentSettings.PaymentsUrl,
-            PublicKey = manualPaymentSettings.PublicKey,
-
+            SourceCode = vivaPaymentSettings.SourceCode,
+            MerchantId = vivaPaymentSettings.MerchantId,
+            AuthUrl = vivaPaymentSettings.AuthUrl,
+            OrdersUrl = vivaPaymentSettings.OrdersUrl,
+            ClientId = vivaPaymentSettings.ClientId,
+            ClientSecret = vivaPaymentSettings.ClientSecret
         };
         if (storeScope > 0){
-            model.ApiPassword_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.ApiPassword, storeScope);
-            model.SourceCode_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.SourceCode, storeScope);
-            model.VivaCheckoutUrl_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.VivaCheckoutUrl, storeScope);
-            model.VivaWalletEndPoint_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.VivaWalletEndPoint, storeScope);
-            model.ApiPassword_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.ApiPassword, storeScope);
-            model.BaseApiUrl_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.BaseApiUrl, storeScope);
-            model.MerchantId_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.MerchantId, storeScope);
-            model.PaymentsCreateOrderUrl_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.PaymentsCreateOrderUrl, storeScope);
-            model.PaymentsUrl_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.PaymentsUrl, storeScope);
-            model.ApiKey_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.ApiKey, storeScope);
-            model.PublicKey_OvverideForStore = _settingService.SettingExists(manualPaymentSettings, x => x.PublicKey, storeScope);
+            model.SourceCode_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.SourceCode, storeScope);
+            model.MerchantId_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.MerchantId, storeScope);
+            model.AuthUrl_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.AuthUrl, storeScope);
+            model.OrdersUrl_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.OrdersUrl, storeScope);
+            model.ClientId_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.ClientId, storeScope);
+            model.ClientSecret_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.ClientSecret, storeScope);
         }
 
         return View("~/Plugins/Payments.VivaPayments/Views/Configure.cshtml", model);
@@ -92,34 +82,26 @@ public class VivaPaymentsController : BasePaymentController
 
         //load settings for a chosen store scope
         var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
-        var manualPaymentSettings = _settingService.LoadSetting<VivaPaymentsSettings>(storeScope);
+        var vivaPaymentSettings = _settingService.LoadSetting<VivaPaymentsSettings>(storeScope);
 
         //save settings
-        manualPaymentSettings.ApiKey = model.ApiKey;
-        manualPaymentSettings.ApiPassword = model.ApiPassword;
-        manualPaymentSettings.SourceCode = model.SourceCode;
-        manualPaymentSettings.VivaCheckoutUrl = model.VivaCheckoutUrl;
-        manualPaymentSettings.VivaWalletEndPoint = model.VivaWalletEndPoint;
-        manualPaymentSettings.BaseApiUrl = model.BaseApiUrl;
-        manualPaymentSettings.MerchantId = model.MerchantId;
-        manualPaymentSettings.PaymentsCreateOrderUrl = model.PaymentsCreateOrderUrl;
-        manualPaymentSettings.PaymentsUrl = model.PaymentsUrl;
-        manualPaymentSettings.PublicKey = model.PublicKey;
+        vivaPaymentSettings.SourceCode = model.SourceCode;
+        vivaPaymentSettings.MerchantId = model.MerchantId;
+        vivaPaymentSettings.AuthUrl = model.AuthUrl;
+        vivaPaymentSettings.OrdersUrl = model.OrdersUrl;
+        vivaPaymentSettings.ClientId = model.ClientId;
+        vivaPaymentSettings.ClientSecret = model.ClientSecret;
 
         /* We do not clear cache after each setting update.
          * This behavior can increase performance because cached settings will not be cleared 
          * and loaded from database after each update */
 
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.ApiKey, model.ApiKey_OvverideForStore, storeScope, true);
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.ApiPassword, model.ApiPassword_OvverideForStore, storeScope, true);
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.SourceCode, model.SourceCode_OvverideForStore, storeScope, true);
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.VivaCheckoutUrl, model.VivaCheckoutUrl_OvverideForStore, storeScope, true);
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.VivaWalletEndPoint, model.VivaWalletEndPoint_OvverideForStore, storeScope, true);
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.BaseApiUrl, model.BaseApiUrl_OvverideForStore, storeScope, true);
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.MerchantId, model.MerchantId_OvverideForStore, storeScope, true);
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.PaymentsCreateOrderUrl, model.PaymentsCreateOrderUrl_OvverideForStore, storeScope, true);
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.PaymentsUrl, model.PaymentsUrl_OvverideForStore, storeScope, true);
-        await _settingService.SaveSettingOverridablePerStoreAsync(manualPaymentSettings, x => x.PublicKey, model.PublicKey_OvverideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.SourceCode, model.SourceCode_OverrideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.MerchantId, model.MerchantId_OverrideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.AuthUrl, model.AuthUrl_OverrideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.OrdersUrl, model.OrdersUrl_OverrideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.ClientId, model.ClientId_OverrideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.ClientSecret, model.ClientSecret_OverrideForStore, storeScope, true);
         //now clear settings cache
         _settingService.ClearCache();
         _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Admin.Plugins.Saved"));

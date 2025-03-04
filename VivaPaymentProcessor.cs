@@ -22,6 +22,7 @@ namespace Nop.Plugin.Payments.VivaPayments {
         protected readonly IOrderTotalCalculationService _orderTotalCalculationService;
         protected readonly ISettingService _settingService;
         protected readonly IWebHelper _webHelper;
+        protected readonly IPaymentService _paymentService;
         protected readonly VivaPaymentsSettings _vivaPaymentsSettings;
 
         #endregion
@@ -32,12 +33,14 @@ namespace Nop.Plugin.Payments.VivaPayments {
             IOrderTotalCalculationService orderTotalCalculationService,
             ISettingService settingService,
             IWebHelper webHelper,
+            IPaymentService paymentService,
             VivaPaymentsSettings vivaPaymentsSettings)
         {
             _localizationService = localizationService;
             _orderTotalCalculationService = orderTotalCalculationService;
             _settingService = settingService;
             _webHelper = webHelper;
+            _paymentService = paymentService;
             _vivaPaymentsSettings = vivaPaymentsSettings;
         }
 
@@ -63,7 +66,7 @@ namespace Nop.Plugin.Payments.VivaPayments {
 
         public Task<CancelRecurringPaymentResult> CancelRecurringPaymentAsync(CancelRecurringPaymentRequest cancelPaymentRequest)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new CancelRecurringPaymentResult());
         }
 
         public Task<bool> CanRePostProcessPaymentAsync(Order order)
@@ -73,17 +76,17 @@ namespace Nop.Plugin.Payments.VivaPayments {
 
         public Task<CapturePaymentResult> CaptureAsync(CapturePaymentRequest capturePaymentRequest)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new CapturePaymentResult { Errors = new[] { "Capture method not supported" } });
         }
 
         public Task<decimal> GetAdditionalHandlingFeeAsync(IList<ShoppingCartItem> cart)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(decimal.Zero);
         }
 
         public Task<ProcessPaymentRequest> GetPaymentInfoAsync(IFormCollection form)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new ProcessPaymentRequest());
         }
 
         public Task<string> GetPaymentMethodDescriptionAsync()
@@ -108,7 +111,7 @@ namespace Nop.Plugin.Payments.VivaPayments {
 
         public Task<ProcessPaymentResult> ProcessPaymentAsync(ProcessPaymentRequest processPaymentRequest)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(new ProcessPaymentResult());
         }
 
         public Task<ProcessPaymentResult> ProcessRecurringPaymentAsync(ProcessPaymentRequest processPaymentRequest)
