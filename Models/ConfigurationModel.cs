@@ -17,6 +17,10 @@ public record ConfigurationModel : BaseNopModel{
     public bool AuthUrl_OverrideForStore { get; set; }
     public string OrdersUrl { get; set; }
     public bool OrdersUrl_OverrideForStore { get; set; }
+    public string RedirectUrl { get; set; }
+    public bool RedirectUrl_OverrideForStore { get; set; }
+    public string TransactionUrl { get; set; }
+    public bool TransactionUrl_OverrideForStore { get; set; }
     public string ClientId { get; set; }
     public bool ClientId_OverrideForStore { get; set; }
     public string ClientSecret { get; set; }

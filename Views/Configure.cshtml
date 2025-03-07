@@ -50,6 +50,28 @@
                         <span asp-validation-for="OrdersUrl"></span>
                     </div>
                 </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="RedirectUrl_OverrideForStore" asp-input="RedirectUrl" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="RedirectUrl" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="RedirectUrl" />
+                        <span asp-validation-for="RedirectUrl"></span>
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="TransactionUrl_OverrideForStore" asp-input="TransactionUrl" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="TransactionUrl" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="TransactionUrl" />
+                        <span asp-validation-for="TransactionUrl"></span>
+                    </div>
+                </div>
                 <div class="form-group row">
                     <div class="col-md-3">
                         <nop-override-store-checkbox asp-for="ClientId_OverrideForStore" asp-input="ClientId" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />

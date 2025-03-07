@@ -59,6 +59,8 @@ public class VivaPaymentsController : BasePaymentController
             MerchantId = vivaPaymentSettings.MerchantId,
             AuthUrl = vivaPaymentSettings.AuthUrl,
             OrdersUrl = vivaPaymentSettings.OrdersUrl,
+            RedirectUrl = vivaPaymentSettings.RedirectUrl,
+            TransactionUrl = vivaPaymentSettings.TransactionUrl,
             ClientId = vivaPaymentSettings.ClientId,
             ClientSecret = vivaPaymentSettings.ClientSecret
         };
@@ -67,6 +69,8 @@ public class VivaPaymentsController : BasePaymentController
             model.MerchantId_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.MerchantId, storeScope);
             model.AuthUrl_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.AuthUrl, storeScope);
             model.OrdersUrl_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.OrdersUrl, storeScope);
+            model.TransactionUrl_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.TransactionUrl, storeScope);
+            model.RedirectUrl_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.RedirectUrl, storeScope);
             model.ClientId_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.ClientId, storeScope);
             model.ClientSecret_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.ClientSecret, storeScope);
         }
@@ -89,6 +93,8 @@ public class VivaPaymentsController : BasePaymentController
         vivaPaymentSettings.MerchantId = model.MerchantId;
         vivaPaymentSettings.AuthUrl = model.AuthUrl;
         vivaPaymentSettings.OrdersUrl = model.OrdersUrl;
+        vivaPaymentSettings.RedirectUrl = model.RedirectUrl;
+        vivaPaymentSettings.TransactionUrl = model.TransactionUrl
         vivaPaymentSettings.ClientId = model.ClientId;
         vivaPaymentSettings.ClientSecret = model.ClientSecret;
 
@@ -100,6 +106,8 @@ public class VivaPaymentsController : BasePaymentController
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.MerchantId, model.MerchantId_OverrideForStore, storeScope, true);
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.AuthUrl, model.AuthUrl_OverrideForStore, storeScope, true);
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.OrdersUrl, model.OrdersUrl_OverrideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.TransactionUrl, model.TransactionUrl_OverrideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.RedirectUrl, model.RedirectUrl_OverrideForStore, storeScope, true);
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.ClientId, model.ClientId_OverrideForStore, storeScope, true);
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.ClientSecret, model.ClientSecret_OverrideForStore, storeScope, true);
         //now clear settings cache
