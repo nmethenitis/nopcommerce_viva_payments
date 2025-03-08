@@ -2,7 +2,7 @@
   "Group": "Payment methods",
   "FriendlyName": "Viva Payments",
   "SystemName": "Payments.VivaPayments",
-  "Version": "4.80.01",
+  "Version": "4.80.3",
   "SupportedVersions": [ "4.80" ],
   "Author": "Nikos Methenitis - nmethenitis@gmail.com",
   "DisplayOrder": -1,

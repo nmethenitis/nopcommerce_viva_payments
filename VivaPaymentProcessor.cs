@@ -4,8 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
+using Nop.Plugin.Payments.VivaPayments.Components;
+using Nop.Plugin.Payments.VivaPayments.Helpers;
 using Nop.Plugin.Payments.VivaPayments.Models;
 using Nop.Services.Configuration;
 using Nop.Services.Customers;
@@ -14,123 +17,131 @@ using Nop.Services.Orders;
 using Nop.Services.Payments;
 using Nop.Services.Plugins;
 
-namespace Nop.Plugin.Payments.VivaPayments {
-    public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
+namespace Nop.Plugin.Payments.VivaPayments;
+public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
 
-        #region Fields
+    #region Fields
 
-        protected readonly ILocalizationService _localizationService;
-        protected readonly IOrderTotalCalculationService _orderTotalCalculationService;
-        protected readonly ISettingService _settingService;
-        protected readonly IWebHelper _webHelper;
-        protected readonly IPaymentService _paymentService;
-        protected readonly VivaPaymentsSettings _vivaPaymentsSettings;
-        protected readonly CustomerService _customerService;
-        protected readonly IWorkContext _workContext;
+    protected readonly ILocalizationService _localizationService;
+    protected readonly IOrderTotalCalculationService _orderTotalCalculationService;
+    protected readonly ISettingService _settingService;
+    protected readonly IWebHelper _webHelper;
+    protected readonly IPaymentService _paymentService;
+    protected readonly VivaPaymentsSettings _vivaPaymentsSettings;
+    protected readonly ICustomerService _customerService;
+    protected readonly IWorkContext _workContext;
+    protected readonly IStoreContext _storeContext;
 
-        #endregion
+    #endregion
 
-        #region Ctor
+    #region Ctor
 
-        public VivaPaymentProcessor(ILocalizationService localizationService, IOrderTotalCalculationService orderTotalCalculationService, ISettingService settingService, IWebHelper webHelper, IPaymentService paymentService, VivaPaymentsSettings vivaPaymentsSettings, CustomerService customerService, IWorkContext workContext) {
-            _localizationService = localizationService;
-            _orderTotalCalculationService = orderTotalCalculationService;
-            _settingService = settingService;
-            _webHelper = webHelper;
-            _paymentService = paymentService;
-            _vivaPaymentsSettings = vivaPaymentsSettings;
-            _customerService = customerService;
-            _workContext = workContext; 
+    public VivaPaymentProcessor(ILocalizationService localizationService, IOrderTotalCalculationService orderTotalCalculationService, ISettingService settingService, IWebHelper webHelper, IPaymentService paymentService, ICustomerService customerService, IWorkContext workContext, IStoreContext storeContext, VivaPaymentsSettings vivaPaymentsSettings) {
+        _localizationService = localizationService;
+        _orderTotalCalculationService = orderTotalCalculationService;
+        _settingService = settingService;
+        _webHelper = webHelper;
+        _paymentService = paymentService;
+        _customerService = customerService;
+        _workContext = workContext;
+        _storeContext = storeContext;
+        _vivaPaymentsSettings = vivaPaymentsSettings;   
+    }
+
+    #endregion
+    public bool SupportCapture => false;
+
+    public bool SupportPartiallyRefund => false;
+
+    public bool SupportRefund => false;
+
+    public bool SupportVoid => false;
+
+    public RecurringPaymentType RecurringPaymentType => RecurringPaymentType.NotSupported;
+
+    public PaymentMethodType PaymentMethodType => PaymentMethodType.Redirection;
+
+    public bool SkipPaymentInfo => false;
+
+    public override string GetConfigurationPageUrl() {
+        return $"{_webHelper.GetStoreLocation()}Admin/VivaPayments/Configure";
+    }
+
+    public Task<CancelRecurringPaymentResult> CancelRecurringPaymentAsync(CancelRecurringPaymentRequest cancelPaymentRequest) {
+        return Task.FromResult(new CancelRecurringPaymentResult { Errors = new[] { "Cancel recurring method not supported" } });
+    }
+
+    public Task<bool> CanRePostProcessPaymentAsync(Order order) {
+        return Task.FromResult(false);
+    }
+
+    public Task<CapturePaymentResult> CaptureAsync(CapturePaymentRequest capturePaymentRequest) {
+        return Task.FromResult(new CapturePaymentResult { Errors = new[] { "Capture method not supported" } });
+    }
+
+    public Task<decimal> GetAdditionalHandlingFeeAsync(IList<ShoppingCartItem> cart) {
+        return Task.FromResult(decimal.Zero);
+    }
+
+    public Task<ProcessPaymentRequest> GetPaymentInfoAsync(IFormCollection form) {
+        return Task.FromResult(new ProcessPaymentRequest());
+    }
+
+    public Task<string> GetPaymentMethodDescriptionAsync() {
+        return Task.FromResult(string.Empty);
+    }
+
+    public Type GetPublicViewComponent() {
+        return typeof(VivaPaymentsInfoViewComponent);
+    }
+
+    public Task<bool> HidePaymentMethodAsync(IList<ShoppingCartItem> cart) {
+        return Task.FromResult(false);
+    }
+
+    public async Task PostProcessPaymentAsync(PostProcessPaymentRequest postProcessPaymentRequest) {
+        try {
+            var order = postProcessPaymentRequest.Order;
+            var customer = await _customerService.GetCustomerByIdAsync(order.CustomerId);
+            var langCode = _workContext.GetWorkingLanguageAsync().Result.LanguageCulture;
+            var currencyCode = Constants.CurrencyCodeToNumeric[_workContext.GetWorkingCurrencyAsync().Result.CurrencyCode];
+            var paymentOrderRequest = new VivaPaymentOrderRequest() {
+                Amount = (int)order.OrderTotal * 100,
+                Customer = new Customer() {
+                    Email = customer.Email,
+                    FullName = $"{customer.FirstName} {customer.LastName}",
+                    Phone = customer.Phone,
+                    RequestLang = langCode,
+                },
+                CustomerTrns = $"{_storeContext.GetCurrentStore().Name} order {order.Id}",
+                MerchantTrns = $"Order {order.Id}",
+                DynamicDescriptor = $"{_storeContext.GetCurrentStore().Name}",
+                CurrencyCode = currencyCode,
+                PaymentTimeout = 1800,
+                SourceCode = _vivaPaymentsSettings.SourceCode
+            };
+        } catch (Exception ex) {
+            throw ex;
         }
+    }
 
-        #endregion
-        public bool SupportCapture => false;
+    public Task<ProcessPaymentResult> ProcessPaymentAsync(ProcessPaymentRequest processPaymentRequest) {
+        return Task.FromResult(new ProcessPaymentResult());
+    }
 
-        public bool SupportPartiallyRefund => false;
+    public Task<ProcessPaymentResult> ProcessRecurringPaymentAsync(ProcessPaymentRequest processPaymentRequest) {
+        return Task.FromResult(new ProcessPaymentResult { Errors = new[] { "Method not supported" } });
+    }
 
-        public bool SupportRefund => false;
+    public Task<RefundPaymentResult> RefundAsync(RefundPaymentRequest refundPaymentRequest) {
+        return Task.FromResult(new RefundPaymentResult { Errors = new[] { "Method not supported" } });
+    }
 
-        public bool SupportVoid => false;
+    public Task<IList<string>> ValidatePaymentFormAsync(IFormCollection form) {
+        return Task.FromResult<IList<string>>(new List<string>());
+    }
 
-        public RecurringPaymentType RecurringPaymentType => RecurringPaymentType.NotSupported;
-
-        public PaymentMethodType PaymentMethodType => PaymentMethodType.Redirection;
-
-        public bool SkipPaymentInfo => false;
-
-        public override string GetConfigurationPageUrl() {
-            return $"{_webHelper.GetStoreLocation()}Admin/VivaPayments/Configure";
-        }
-
-        public Task<CancelRecurringPaymentResult> CancelRecurringPaymentAsync(CancelRecurringPaymentRequest cancelPaymentRequest) {
-            return Task.FromResult(new CancelRecurringPaymentResult());
-        }
-
-        public Task<bool> CanRePostProcessPaymentAsync(Order order) {
-            throw new NotImplementedException();
-        }
-
-        public Task<CapturePaymentResult> CaptureAsync(CapturePaymentRequest capturePaymentRequest) {
-            return Task.FromResult(new CapturePaymentResult { Errors = new[] { "Capture method not supported" } });
-        }
-
-        public Task<decimal> GetAdditionalHandlingFeeAsync(IList<ShoppingCartItem> cart) {
-            return Task.FromResult(decimal.Zero);
-        }
-
-        public Task<ProcessPaymentRequest> GetPaymentInfoAsync(IFormCollection form) {
-            return Task.FromResult(new ProcessPaymentRequest());
-        }
-
-        public Task<string> GetPaymentMethodDescriptionAsync() {
-            throw new NotImplementedException();
-        }
-
-        public Type GetPublicViewComponent() {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> HidePaymentMethodAsync(IList<ShoppingCartItem> cart) {
-            throw new NotImplementedException();
-        }
-
-        public async Task PostProcessPaymentAsync(PostProcessPaymentRequest postProcessPaymentRequest) {
-            try {
-                var order = postProcessPaymentRequest.Order;
-                var customer = await _customerService.GetCustomerByIdAsync(order.CustomerId);
-                var paymentOrderRequest = new VivaPaymentOrderRequest() {
-                    Amount = (int)order.OrderTotal * 100,
-                    Customer = new Customer() {
-                        Email = customer.Email,
-                        //CountryCode = customer.County
-                        FullName = $"{customer.FirstName} {customer.LastName}",
-                        Phone = customer.Phone,
-                        RequestLang = _workContext.GetWorkingLanguageAsync().ToString(),
-                    }
-                };
-            } catch (Exception ex) {
-                throw ex;
-            }
-        }
-
-        public Task<ProcessPaymentResult> ProcessPaymentAsync(ProcessPaymentRequest processPaymentRequest) {
-            return Task.FromResult(new ProcessPaymentResult());
-        }
-
-        public Task<ProcessPaymentResult> ProcessRecurringPaymentAsync(ProcessPaymentRequest processPaymentRequest) {
-            throw new NotImplementedException();
-        }
-
-        public Task<RefundPaymentResult> RefundAsync(RefundPaymentRequest refundPaymentRequest) {
-            throw new NotImplementedException();
-        }
-
-        public Task<IList<string>> ValidatePaymentFormAsync(IFormCollection form) {
-            throw new NotImplementedException();
-        }
-
-        public Task<VoidPaymentResult> VoidAsync(VoidPaymentRequest voidPaymentRequest) {
-            throw new NotImplementedException();
-        }
+    public Task<VoidPaymentResult> VoidAsync(VoidPaymentRequest voidPaymentRequest) {
+        return Task.FromResult(new VoidPaymentResult { Errors = new[] { "Method not supported" } });
     }
 }

@@ -10,10 +10,13 @@ public class VivaPaymentsSettings : ISettings
 {
     public string SourceCode { get; set; }
     public string MerchantId { get; set; }
-    public string AuthUrl { get; set; }
-    public string OrdersUrl { get; set; }
-    public string RedirectUrl { get; set; }
-    public string TransactionUrl { get; set; }
+    public bool IsSandbox { get; set; }
+    public bool PreAuth { get; set; } = false;
+    public bool DisableExactAmount { get; set; } = false;
+    public bool DisableCash { get; set; } = false;
+    public bool DisableWallet { get; set; } = false;
+    public string PaymentTitle { get; set; }
+    public string PaymentDescription { get; set; }
     public string ClientId { get; set; }
     public string ClientSecret { get; set; }
 }
