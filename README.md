@@ -1,4 +1,6 @@
-# NopCommerce Viva Payments plugin
+# NopCommerce Viva Smart Checkout Payments plugin
+With this project a nopcommerce site can accept payments through the [Viva Smart Checkout](https://developer.viva.com/smart-checkout/smart-checkout-integration/)
+Still under development.
 This project is totally free and open source
 
 ## Features
