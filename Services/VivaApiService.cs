@@ -67,8 +67,8 @@ public class VivaApiService{
 
     public async Task<VivaTransactionCancelResponse> CancelTransaction(VivaTransactionCancelRequest vivaTransactionCancelRequest) {
         using (var client = new HttpClient()) {
-            client.BaseAddress = new Uri(GetApiBaseUrl());
-            client.DefaultRequestHeaders.Add("Authorization", $"Basic {await GetTokenAsync()}");
+            client.BaseAddress = new Uri(GetOldApiBaseUrl());
+            client.DefaultRequestHeaders.Add("Authorization", $"Basic {GetBasicAuth()}");
             client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var httpResponseMessage = await client.DeleteAsync(String.Format(VivaPaymentsDefaults.CancelTransactionPath, vivaTransactionCancelRequest.TransactionId, vivaTransactionCancelRequest.Amount, vivaTransactionCancelRequest.SourceCode));
             if (httpResponseMessage.IsSuccessStatusCode) {
@@ -98,6 +98,10 @@ public class VivaApiService{
         }
     }
 
+    public string GetBasicAuth() {
+        return EncodeToBase64($"{_vivaPaymentSettings.MerchantId}:{_vivaPaymentSettings.ApiKey}");
+    }
+
     private string EncodeToBase64(string input){
         if (string.IsNullOrEmpty(input)){
             throw new ArgumentException("Input cannot be null or empty", nameof(input));
@@ -109,6 +113,10 @@ public class VivaApiService{
 
     private string GetApiBaseUrl() {
         return _vivaPaymentSettings.IsSandbox ? VivaPaymentsDefaults.ApiUrl.Sandbox : VivaPaymentsDefaults.ApiUrl.Live;
+    }
+
+    private string GetOldApiBaseUrl() {
+        return _vivaPaymentSettings.IsSandbox ? VivaPaymentsDefaults.OldApiUrl.Sandbox : VivaPaymentsDefaults.OldApiUrl.Live;
     }
 
     private string GetAccountBaseUrl() {

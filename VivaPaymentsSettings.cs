@@ -10,6 +10,7 @@ public class VivaPaymentsSettings : ISettings
 {
     public string SourceCode { get; set; }
     public string MerchantId { get; set; }
+    public string ApiKey { get;set; }
     public bool IsSandbox { get; set; }
     public bool PreAuth { get; set; } = false;
     public bool DisableExactAmount { get; set; } = false;

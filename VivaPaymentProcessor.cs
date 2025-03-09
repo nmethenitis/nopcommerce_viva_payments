@@ -60,9 +60,9 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     #endregion
     public bool SupportCapture => false;
 
-    public bool SupportPartiallyRefund => false;
+    public bool SupportPartiallyRefund => true;
 
-    public bool SupportRefund => false;
+    public bool SupportRefund => true;
 
     public bool SupportVoid => false;
 
@@ -155,13 +155,13 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     public async Task<RefundPaymentResult> RefundAsync(RefundPaymentRequest refundPaymentRequest) {
         var order = refundPaymentRequest.Order;
         var vivaTransactionCancelRequest = new VivaTransactionCancelRequest() {
-            Amount = refundPaymentRequest.AmountToRefund,
+            Amount = (int)refundPaymentRequest.AmountToRefund*100,
             SourceCode = _vivaPaymentsSettings.SourceCode,
             TransactionId = order.CaptureTransactionId
         };
-        var vivaTransactionCancelResponse = _vivaApiService.CancelTransaction(vivaTransactionCancelRequest).Result;
-        if (vivaTransactionCancelResponse.Success) {
-            return new RefundPaymentResult { NewPaymentStatus = PaymentStatus.Refunded};
+        var vivaTransactionCancelResponse = await _vivaApiService.CancelTransaction(vivaTransactionCancelRequest);
+        if (vivaTransactionCancelResponse.Success.HasValue && vivaTransactionCancelResponse.Success.Value) {
+            return new RefundPaymentResult { NewPaymentStatus = refundPaymentRequest.IsPartialRefund ? PaymentStatus.PartiallyRefunded : PaymentStatus.Refunded};
         }
         return new RefundPaymentResult { Errors = new[] { "Something went wrong" } };
     }

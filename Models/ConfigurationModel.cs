@@ -13,6 +13,8 @@ public record ConfigurationModel : BaseNopModel{
     public bool SourceCode_OverrideForStore { get; set; }
     public string MerchantId { get; set; }
     public bool MerchantId_OverrideForStore { get; set; }
+    public string ApiKey { get; set; }
+    public bool ApiKey_OverrideForStore { get; set; }
     public bool IsSandbox { get; set; } = false;
     public bool IsSandbox_OverrideForStore { get; set; }
     public string ClientId { get; set; }
