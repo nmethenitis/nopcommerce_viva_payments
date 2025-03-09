@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
+using Nop.Core.Domain.Payments;
 using Nop.Plugin.Payments.VivaPayments.Components;
 using Nop.Plugin.Payments.VivaPayments.Helpers;
 using Nop.Plugin.Payments.VivaPayments.Models;
@@ -151,9 +152,18 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
         return Task.FromResult(new ProcessPaymentResult { Errors = new[] { "Method not supported" } });
     }
 
-    public Task<RefundPaymentResult> RefundAsync(RefundPaymentRequest refundPaymentRequest) {
+    public async Task<RefundPaymentResult> RefundAsync(RefundPaymentRequest refundPaymentRequest) {
         var order = refundPaymentRequest.Order;
-        return Task.FromResult(new RefundPaymentResult { Errors = new[] { "Method not supported" } });
+        var vivaTransactionCancelRequest = new VivaTransactionCancelRequest() {
+            Amount = refundPaymentRequest.AmountToRefund,
+            SourceCode = _vivaPaymentsSettings.SourceCode,
+            TransactionId = order.CaptureTransactionId
+        };
+        var vivaTransactionCancelResponse = _vivaApiService.CancelTransaction(vivaTransactionCancelRequest).Result;
+        if (vivaTransactionCancelResponse.Success) {
+            return new RefundPaymentResult { NewPaymentStatus = PaymentStatus.Refunded};
+        }
+        return new RefundPaymentResult { Errors = new[] { "Something went wrong" } };
     }
 
     public Task<IList<string>> ValidatePaymentFormAsync(IFormCollection form) {

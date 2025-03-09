@@ -19,6 +19,7 @@ using System.Text.Json;
 using Nop.Plugin.Payments.VivaPayments.Helpers;
 using System.Net.Mime;
 using System.Net.Http.Headers;
+using System.Transactions;
 
 namespace Nop.Plugin.Payments.VivaPayments.Services;
 public class VivaApiService{
@@ -57,6 +58,22 @@ public class VivaApiService{
             if (httpResponseMessage.IsSuccessStatusCode) {
                 var httpResponseContent = await httpResponseMessage.Content.ReadAsStringAsync();
                 var response = JsonSerializer.Deserialize<VivaTransactionResponse>(httpResponseContent, JsonSerializerOptionDefaults.GetDefaultSettings());
+                return response;
+            } else {
+                throw new Exception($"Error: {httpResponseMessage.StatusCode} - {httpResponseMessage.ReasonPhrase}");
+            }
+        }
+    }
+
+    public async Task<VivaTransactionCancelResponse> CancelTransaction(VivaTransactionCancelRequest vivaTransactionCancelRequest) {
+        using (var client = new HttpClient()) {
+            client.BaseAddress = new Uri(GetApiBaseUrl());
+            client.DefaultRequestHeaders.Add("Authorization", $"Basic {await GetTokenAsync()}");
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var httpResponseMessage = await client.DeleteAsync(String.Format(VivaPaymentsDefaults.CancelTransactionPath, vivaTransactionCancelRequest.TransactionId, vivaTransactionCancelRequest.Amount, vivaTransactionCancelRequest.SourceCode));
+            if (httpResponseMessage.IsSuccessStatusCode) {
+                var httpResponseContent = await httpResponseMessage.Content.ReadAsStringAsync();
+                var response = JsonSerializer.Deserialize<VivaTransactionCancelResponse>(httpResponseContent, JsonSerializerOptionDefaults.GetDefaultSettings());
                 return response;
             } else {
                 throw new Exception($"Error: {httpResponseMessage.StatusCode} - {httpResponseMessage.ReasonPhrase}");

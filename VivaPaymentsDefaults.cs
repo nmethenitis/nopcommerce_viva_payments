@@ -16,5 +16,7 @@ public class VivaPaymentsDefaults {
     public static string OrderPath = "checkout/v2/orders";
     public static (string Sandbox, string Live) RedirectUrl => ("https://demo.vivapayments.com/web/checkout?ref={0}", "https://www.vivapayments.com/web/checkout?ref={0}");
     public static string TransactionPath = "checkout/v2/transactions/{0}";
+    public static string CancelTransactionPath = "checkout/v2/transactions/{0}?amount={1}&sourcecode={2}";
     public static string SuccessPaymentRouteName = "Plugin.Payments.VivaPayments.SuccessPayment";
+    public static string FailPaymentRouteName = "Plugin.Payments.VivaPayments.FailPayment";
 }

@@ -15,10 +15,10 @@ public class RouteProvider : IRouteProvider {
         endpointRouteBuilder.MapControllerRoute(
             name: VivaPaymentsDefaults.SuccessPaymentRouteName, 
             pattern: "viva-payment/success", 
-            defaults:new { controller = "VivaPaymentsPublic", action = "PaymentSuccess" });
-        //endpointRouteBuilder.MapControllerRoute("Plugin.Payments.VivaPayments.FailPayment", "viva-payment/fail", new { controller = "VivaPaymentsPublicController", action = "PaymentFailAsync" });
-        endpointRouteBuilder.MapControllerRoute("Plugin.Payments.VivaPayments.SuccessPaymentTest",
-                "Plugins/VivaPayments/Success",
-                new { controller = "VivaPaymentsPublicController", action = "PaymentSuccess" });
+            defaults: new { controller = "VivaPaymentsPublic", action = "PaymentSuccess" });
+        endpointRouteBuilder.MapControllerRoute(
+            name: VivaPaymentsDefaults.FailPaymentRouteName, 
+            pattern: "viva-payment/fail",
+            defaults: new { controller = "VivaPaymentsPublic", action = "PaymentFail" });
     }
 }

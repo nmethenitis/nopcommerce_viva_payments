@@ -28,15 +28,15 @@ public class VivaPaymentsPublicController : BasePaymentController {
         _orderProcessingService = orderProcessingService;
     }
 
-    public async Task<IActionResult> PaymentSuccess([FromQuery] VivaPaymentRedirection vivaPaymerRedirection) {
-        if (vivaPaymerRedirection == null) {
+    public async Task<IActionResult> PaymentSuccess([FromQuery] VivaPaymentRedirection vivaPaymentRedirection) {
+        if (vivaPaymentRedirection == null) {
             throw new NopException("Viva redirection result is null");
         }
-        var vivaTransactionResponse = await _vivaApiService.GetTransactionDetailsAsync(vivaPaymerRedirection.TransactionId);
+        var vivaTransactionResponse = await _vivaApiService.GetTransactionDetailsAsync(vivaPaymentRedirection.TransactionId);
         if (vivaTransactionResponse != null) {
             var paymentStatus = Common.GetPaymentStatus(vivaTransactionResponse.StatusId);
-            var order = _orderRepository.Table.FirstOrDefault(x => x.AuthorizationTransactionCode == vivaPaymerRedirection.OrderCode);
-            order.CaptureTransactionId = vivaPaymerRedirection.TransactionId;
+            var order = _orderRepository.Table.FirstOrDefault(x => x.AuthorizationTransactionCode == vivaPaymentRedirection.OrderCode);
+            order.CaptureTransactionId = vivaPaymentRedirection.TransactionId;
             await _orderService.InsertOrderNoteAsync(new OrderNote {
                 OrderId = order.Id,
                 Note = JsonSerializer.Serialize(vivaTransactionResponse),
@@ -45,7 +45,7 @@ public class VivaPaymentsPublicController : BasePaymentController {
             });
             if (order.OrderTotal != (decimal)vivaTransactionResponse.Amount) {
                 var message = $"There is a diference between paid amount ({vivaTransactionResponse.Amount}) and order amount ({order.OrderTotal})";
-                order.CaptureTransactionId = vivaPaymerRedirection.TransactionId;
+                order.CaptureTransactionId = vivaPaymentRedirection.TransactionId;
                 await _orderService.InsertOrderNoteAsync(new OrderNote {
                     OrderId = order.Id,
                     Note = message,
