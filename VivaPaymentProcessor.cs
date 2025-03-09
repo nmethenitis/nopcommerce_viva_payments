@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -10,6 +11,7 @@ using Nop.Core.Domain.Orders;
 using Nop.Plugin.Payments.VivaPayments.Components;
 using Nop.Plugin.Payments.VivaPayments.Helpers;
 using Nop.Plugin.Payments.VivaPayments.Models;
+using Nop.Plugin.Payments.VivaPayments.Services;
 using Nop.Services.Configuration;
 using Nop.Services.Customers;
 using Nop.Services.Localization;
@@ -31,12 +33,15 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     protected readonly ICustomerService _customerService;
     protected readonly IWorkContext _workContext;
     protected readonly IStoreContext _storeContext;
+    protected readonly VivaApiService _vivaApiService;
+    protected readonly IHttpContextAccessor _httpContextAccessor;
+    protected readonly IOrderService _orderService;
 
     #endregion
 
     #region Ctor
 
-    public VivaPaymentProcessor(ILocalizationService localizationService, IOrderTotalCalculationService orderTotalCalculationService, ISettingService settingService, IWebHelper webHelper, IPaymentService paymentService, ICustomerService customerService, IWorkContext workContext, IStoreContext storeContext, VivaPaymentsSettings vivaPaymentsSettings) {
+    public VivaPaymentProcessor(ILocalizationService localizationService, IOrderTotalCalculationService orderTotalCalculationService, ISettingService settingService, IWebHelper webHelper, IPaymentService paymentService, ICustomerService customerService, IWorkContext workContext, IStoreContext storeContext, VivaPaymentsSettings vivaPaymentsSettings, VivaApiService vivaApiService, IHttpContextAccessor httpContextAccessor, IOrderService orderService) {
         _localizationService = localizationService;
         _orderTotalCalculationService = orderTotalCalculationService;
         _settingService = settingService;
@@ -45,7 +50,10 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
         _customerService = customerService;
         _workContext = workContext;
         _storeContext = storeContext;
-        _vivaPaymentsSettings = vivaPaymentsSettings;   
+        _vivaPaymentsSettings = vivaPaymentsSettings;
+        _vivaApiService = vivaApiService;
+        _httpContextAccessor = httpContextAccessor;
+        _orderService = orderService;
     }
 
     #endregion
@@ -117,11 +125,21 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
                 MerchantTrns = $"Order {order.Id}",
                 DynamicDescriptor = $"{_storeContext.GetCurrentStore().Name}",
                 CurrencyCode = currencyCode,
-                PaymentTimeout = 1800,
+                PaymentTimeout = VivaPaymentsDefaults.PaymentTimeout,
                 SourceCode = _vivaPaymentsSettings.SourceCode
             };
+            var paymentOrderResult = await _vivaApiService.CreatePaymentOrderAsync(paymentOrderRequest);
+            if (paymentOrderResult != null) {
+                order.AuthorizationTransactionCode = paymentOrderResult.OrderCode.ToString();
+                await _orderService.UpdateOrderAsync(order);
+                var redirectUrl = String.Format(_vivaPaymentsSettings.IsSandbox ? VivaPaymentsDefaults.RedirectUrl.Sandbox : VivaPaymentsDefaults.RedirectUrl.Live, order.AuthorizationTransactionCode);
+                _httpContextAccessor.HttpContext.Response.Redirect(redirectUrl);
+                return;
+            } else {
+                throw new NopException("Viva payment result is null");
+            }
         } catch (Exception ex) {
-            throw ex;
+            throw new NopException($"Error: {ex.Source} - {ex.Message}");
         }
     }
 
@@ -134,6 +152,7 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     }
 
     public Task<RefundPaymentResult> RefundAsync(RefundPaymentRequest refundPaymentRequest) {
+        var order = refundPaymentRequest.Order;
         return Task.FromResult(new RefundPaymentResult { Errors = new[] { "Method not supported" } });
     }
 

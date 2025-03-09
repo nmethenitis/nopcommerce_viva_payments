@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace Nop.Plugin.Payments.VivaPayments.Models;
+
 public class VivaTransactionResponse {
     public string Email { get; set; }
     public string BankId { get; set; }
@@ -32,7 +33,7 @@ public class VivaTransactionResponse {
     public int CurrentInstallment { get; set; }
     public int CardTypeId { get; set; }
     public DateTime CardExpirationDate { get; set; }
-    public int DigitalWalletId { get; set; }
+    public int? DigitalWalletId { get; set; }
     public List<LoyaltyTransaction> LoyaltyTransactions { get; set; }
 }
 

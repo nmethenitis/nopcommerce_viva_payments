@@ -18,6 +18,7 @@ using Nop.Plugin.Payments.VivaPayments.Models;
 using System.Text.Json;
 using Nop.Plugin.Payments.VivaPayments.Helpers;
 using System.Net.Mime;
+using System.Net.Http.Headers;
 
 namespace Nop.Plugin.Payments.VivaPayments.Services;
 public class VivaApiService{
@@ -31,12 +32,12 @@ public class VivaApiService{
 
     public async Task<VivaPaymentOrderResponse> CreatePaymentOrderAsync(VivaPaymentOrderRequest request) {
         using (var client = new HttpClient()) {
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {GetTokenAsync()}");
-            client.DefaultRequestHeaders.Add("Content-Type", MediaTypeNames.Application.Json);
+            client.BaseAddress = new Uri(GetApiBaseUrl());
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {await GetTokenAsync()}");
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             var payload = JsonSerializer.Serialize(request);
-            var content = new StringContent(payload, Encoding.UTF8, MediaTypeNames.Application.Json);
-            var url = _vivaPaymentSettings.IsSandbox ? VivaPaymentsDefaults.ApiUrl.Sandbox : VivaPaymentsDefaults.ApiUrl.Live;
-            var httpResponseMessage = await client.PostAsync($"{url}{VivaPaymentsDefaults.OrderPath}", content);
+            var content = new StringContent(payload, Encoding.UTF8, "application/json");
+            var httpResponseMessage = await client.PostAsync(VivaPaymentsDefaults.OrderPath, content);
             if (httpResponseMessage.IsSuccessStatusCode) {
                 var httpResponseContent = await httpResponseMessage.Content.ReadAsStringAsync();
                 var response = JsonSerializer.Deserialize<VivaPaymentOrderResponse>(httpResponseContent, JsonSerializerOptionDefaults.GetDefaultSettings());
@@ -49,11 +50,10 @@ public class VivaApiService{
 
     public async Task<VivaTransactionResponse> GetTransactionDetailsAsync(string transactionId) {
         using (var client = new HttpClient()) {
-            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {GetTokenAsync()}");
-            client.DefaultRequestHeaders.Add("Content-Type", MediaTypeNames.Application.Json);
-            var content = new StringContent(string.Empty, Encoding.UTF8, MediaTypeNames.Application.Json);
-            var url = _vivaPaymentSettings.IsSandbox ? VivaPaymentsDefaults.ApiUrl.Sandbox : VivaPaymentsDefaults.ApiUrl.Live;
-            var httpResponseMessage = await client.PostAsync($"{url}{VivaPaymentsDefaults.TransactionPath}", content);
+            client.BaseAddress = new Uri(GetApiBaseUrl());
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {await GetTokenAsync()}");
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            var httpResponseMessage = await client.GetAsync(String.Format(VivaPaymentsDefaults.TransactionPath, transactionId));
             if (httpResponseMessage.IsSuccessStatusCode) {
                 var httpResponseContent = await httpResponseMessage.Content.ReadAsStringAsync();
                 var response = JsonSerializer.Deserialize<VivaTransactionResponse>(httpResponseContent, JsonSerializerOptionDefaults.GetDefaultSettings());
@@ -67,10 +67,10 @@ public class VivaApiService{
     public async Task<string> GetTokenAsync(){
         using (var client = new HttpClient()){
             var base64Encoded = EncodeToBase64($"{_vivaPaymentSettings.ClientId}:{_vivaPaymentSettings.ClientSecret}");
+            client.BaseAddress = new Uri(GetAccountBaseUrl());
             client.DefaultRequestHeaders.Add("Authorization", $"Basic {base64Encoded}");
             var requestContent = new StringContent("grant_type=client_credentials",Encoding.UTF8, "application/x-www-form-urlencoded");
-            var url = _vivaPaymentSettings.IsSandbox ? VivaPaymentsDefaults.AccountUrl.Sandbox : VivaPaymentsDefaults.AccountUrl.Live;
-            var httpResponseMessage = await client.PostAsync($"{url}{VivaPaymentsDefaults.AuthPath}", requestContent);
+            var httpResponseMessage = await client.PostAsync(VivaPaymentsDefaults.AuthPath, requestContent);
             if (httpResponseMessage.IsSuccessStatusCode) {
                 var httpResponseContent = await httpResponseMessage.Content.ReadAsStringAsync();
                 var response = JsonSerializer.Deserialize<VivaIdentityResponse>(httpResponseContent, JsonSerializerOptionDefaults.GetDefaultSettings());
@@ -88,5 +88,13 @@ public class VivaApiService{
         byte[] bytes = Encoding.UTF8.GetBytes(input);
         string base64String = Convert.ToBase64String(bytes);
         return base64String;
+    }
+
+    private string GetApiBaseUrl() {
+        return _vivaPaymentSettings.IsSandbox ? VivaPaymentsDefaults.ApiUrl.Sandbox : VivaPaymentsDefaults.ApiUrl.Live;
+    }
+
+    private string GetAccountBaseUrl() {
+        return _vivaPaymentSettings.IsSandbox ? VivaPaymentsDefaults.AccountUrl.Sandbox : VivaPaymentsDefaults.AccountUrl.Live;
     }
 }
