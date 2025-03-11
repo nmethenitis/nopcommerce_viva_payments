@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using FluentMigrator.Runner;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
@@ -70,5 +71,28 @@ public class VivaPaymentsPublicController : BasePaymentController {
         } else {
             throw new NopException("Viva transaction result is null");
         }
+    }
+
+    public async Task<IActionResult> PaymentFail([FromQuery] VivaPaymentRedirection vivaPaymentRedirection) {
+        if (vivaPaymentRedirection == null) {
+            throw new NopException("Viva redirection result is null");
+        }
+        var order = _orderRepository.Table.FirstOrDefault(x => x.AuthorizationTransactionCode == vivaPaymentRedirection.OrderCode);
+        var vivaTransactionResponse = await _vivaApiService.GetTransactionDetailsAsync(vivaPaymentRedirection.TransactionId);
+        await _orderService.InsertOrderNoteAsync(new OrderNote {
+            OrderId = order.Id,
+            Note = $"Payment failed with event id: {vivaPaymentRedirection.EventId} - {Constants.EventIds[vivaPaymentRedirection.EventId]}",
+            DisplayToCustomer = false,
+            CreatedOnUtc = DateTime.UtcNow
+        });
+        return RedirectToRoute("CheckoutCompleted", new { orderId = order.Id });
+    }}
+
+    public async Task<IActionResult> PaymentWebhook([FromQuery] VivaPaymentWebhookRequest vivaPaymentWebhookRequest) {
+        if (vivaPaymentWebhookRequest == null) {
+            throw new NopException("Viva redirection result is null");
+        }
+        var order = _orderRepository.Table.FirstOrDefault(x => x.AuthorizationTransactionCode == vivaPaymentWebhookRequest.EventData.OrderCode.ToString());
+        return RedirectToRoute("CheckoutCompleted", new { orderId = order.Id });
     }
 }

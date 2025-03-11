@@ -20,4 +20,5 @@ public class VivaPaymentsDefaults {
     public static string CancelTransactionPath = "api/transactions/{0}?amount={1}&sourcecode={2}";
     public static string SuccessPaymentRouteName = "Plugin.Payments.VivaPayments.SuccessPayment";
     public static string FailPaymentRouteName = "Plugin.Payments.VivaPayments.FailPayment";
+    public static string WebhookPaymentRouteName = "Plugin.Payments.VivaPayments.Webhook";
 }   
