@@ -127,7 +127,8 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
                 DynamicDescriptor = $"{_storeContext.GetCurrentStore().Name}",
                 CurrencyCode = currencyCode,
                 PaymentTimeout = VivaPaymentsDefaults.PaymentTimeout,
-                SourceCode = _vivaPaymentsSettings.SourceCode
+                SourceCode = _vivaPaymentsSettings.SourceCode,
+                MaxInstallments = _vivaPaymentsSettings.EnableInstallments && _vivaPaymentsSettings.MinInstallments > 0 ? CalculateMaxInstallments(order.OrderTotal, _vivaPaymentsSettings.MinInstallments) : 0
             };
             var paymentOrderResult = await _vivaApiService.CreatePaymentOrderAsync(paymentOrderRequest);
             if (paymentOrderResult != null) {
@@ -172,5 +173,15 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
 
     public Task<VoidPaymentResult> VoidAsync(VoidPaymentRequest voidPaymentRequest) {
         return Task.FromResult(new VoidPaymentResult { Errors = new[] { "Method not supported" } });
+    }
+
+    private int CalculateMaxInstallments(decimal orderTotal, decimal minInstallmentAmount) {
+        var installments = Math.Floor(orderTotal / minInstallmentAmount);
+        if(installments >= 3 && installments <= 12) {
+            return (int)installments;
+        }else if (installments > 12) {
+            return 12;
+        }
+        return 0;
     }
 }

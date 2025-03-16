@@ -33,4 +33,8 @@ public record ConfigurationModel : BaseNopModel{
     public bool PaymentTitle_OverrideForStore { get; set; }
     public string PaymentDescription { get; set; }
     public bool PaymentDescription_OverrideForStore { get; set; }
+    public bool EnableInstallments { get; set; } = false;
+    public bool EnableInstallments_OverrideForStore { get; set; }
+    public decimal MinInstallments { get; set; }
+    public bool MinInstallments_OverrideForStore { get; set; }
 }

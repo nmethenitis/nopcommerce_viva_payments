@@ -29,7 +29,7 @@
                     </div>
                     <div class="col-md-9">
                         <nop-editor asp-for="PaymentDescription" asp-template="RichEditor" />
-                        <span asp-validation-for="PaymentTitle"></span>
+                        <span asp-validation-for="PaymentDescription"></span>
                     </div>
                 </div>
                 <div class="form-group row">
@@ -40,6 +40,26 @@
                     <div class="col-md-9">
                         <nop-editor asp-for="SourceCode" />
                         <span asp-validation-for="SourceCode"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="EnableInstallments_OverrideForStore" asp-input="EnableInstallments" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="EnableInstallments" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="EnableInstallments" />
+                        <span asp-validation-for="EnableInstallments"></span>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <div class="col-md-3">
+                        <nop-override-store-checkbox asp-for="MinInstallments_OverrideForStore" asp-input="MinInstallments" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                        <nop-label asp-for="MinInstallments" />
+                    </div>
+                    <div class="col-md-9">
+                        <nop-editor asp-for="MinInstallments" />
+                        <span asp-validation-for="MinInstallments"></span>
                     </div>
                 </div>
                 <div class="form-group row">

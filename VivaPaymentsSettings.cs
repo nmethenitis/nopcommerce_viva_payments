@@ -20,4 +20,6 @@ public class VivaPaymentsSettings : ISettings
     public string PaymentDescription { get; set; }
     public string ClientId { get; set; }
     public string ClientSecret { get; set; }
+    public bool EnableInstallments { get; set; } = false;
+    public decimal MinInstallments { get; set; }
 }

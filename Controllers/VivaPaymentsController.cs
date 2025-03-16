@@ -62,7 +62,9 @@ public class VivaPaymentsController : BasePaymentController
             PaymentTitle = vivaPaymentSettings.PaymentTitle,
             PaymentDescription = vivaPaymentSettings.PaymentDescription,
             ClientId = vivaPaymentSettings.ClientId,
-            ClientSecret = vivaPaymentSettings.ClientSecret
+            ClientSecret = vivaPaymentSettings.ClientSecret,
+            EnableInstallments = vivaPaymentSettings.EnableInstallments,
+            MinInstallments = vivaPaymentSettings.MinInstallments
         };
         if (storeScope > 0){
             model.SourceCode_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.SourceCode, storeScope);
@@ -73,6 +75,8 @@ public class VivaPaymentsController : BasePaymentController
             model.PaymentTitle_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.PaymentTitle, storeScope);
             model.ClientId_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.ClientId, storeScope);
             model.ClientSecret_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.ClientSecret, storeScope);
+            model.EnableInstallments_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.EnableInstallments, storeScope);
+            model.MinInstallments_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.MinInstallments, storeScope);
         }
 
         return View("~/Plugins/Payments.VivaPayments/Views/Configure.cshtml", model);
@@ -97,6 +101,8 @@ public class VivaPaymentsController : BasePaymentController
         vivaPaymentSettings.PaymentDescription = model.PaymentDescription;
         vivaPaymentSettings.ClientId = model.ClientId;
         vivaPaymentSettings.ClientSecret = model.ClientSecret;
+        vivaPaymentSettings.EnableInstallments = model.EnableInstallments;
+        vivaPaymentSettings.MinInstallments = model.MinInstallments;
 
         /* We do not clear cache after each setting update.
          * This behavior can increase performance because cached settings will not be cleared 
@@ -110,6 +116,8 @@ public class VivaPaymentsController : BasePaymentController
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.PaymentDescription, model.PaymentDescription_OverrideForStore, storeScope, true);
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.ClientId, model.ClientId_OverrideForStore, storeScope, true);
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.ClientSecret, model.ClientSecret_OverrideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.EnableInstallments, model.EnableInstallments_OverrideForStore, storeScope, true);
+        await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.MinInstallments, model.MinInstallments_OverrideForStore, storeScope, true);
         //now clear settings cache
         _settingService.ClearCache();
         _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Admin.Plugins.Saved"));
