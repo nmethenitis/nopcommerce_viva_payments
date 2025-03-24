@@ -57,12 +57,12 @@ public class VivaPaymentsPublicController : BasePaymentController {
             }
             if (paymentStatus == PaymentStatus.Paid) {
                 if (!_orderProcessingService.CanMarkOrderAsPaid(order)) {
-                    return RedirectToRoute("CheckoutCompleted", new { orderId = order.Id });
+                    return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
                 }
                 await _orderProcessingService.MarkOrderAsPaidAsync(order);
             } else if (paymentStatus == PaymentStatus.Authorized) {
                 if (!_orderProcessingService.CanMarkOrderAsAuthorized(order)) {
-                    return RedirectToRoute("CheckoutCompleted", new { orderId = order.Id });
+                    return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
                 }
                 await _orderProcessingService.MarkAsAuthorizedAsync(order);
             }
@@ -88,7 +88,7 @@ public class VivaPaymentsPublicController : BasePaymentController {
             DisplayToCustomer = false,
             CreatedOnUtc = DateTime.UtcNow
         });
-        return RedirectToRoute("CheckoutCompleted", new { orderId = order.Id });
+        return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
     }
 
     public async Task<IActionResult> PaymentWebhook([FromQuery] VivaPaymentWebhookRequest vivaPaymentWebhookRequest) {
@@ -96,7 +96,7 @@ public class VivaPaymentsPublicController : BasePaymentController {
             throw new NopException("Viva redirection result is null");
         }
         var order = _orderRepository.Table.FirstOrDefault(x => x.AuthorizationTransactionCode == vivaPaymentWebhookRequest.EventData.OrderCode.ToString());
-        return RedirectToRoute("CheckoutCompleted", new { orderId = order.Id });
+        return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
     }
 
     public async Task<IActionResult> OrderCompleted(Guid orderGuid) {
