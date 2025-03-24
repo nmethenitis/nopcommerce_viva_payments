@@ -24,5 +24,9 @@ public class RouteProvider : IRouteProvider {
             name: VivaPaymentsDefaults.WebhookPaymentRouteName,
             pattern: "viva-payment/webhook",
             defaults: new { controller = "VivaPaymentsPublic", action = "PaymentWebhook" });
+        endpointRouteBuilder.MapControllerRoute(
+            name: VivaPaymentsDefaults.OrderCompletedRouteName,
+            pattern: "checkout/order-completed/{orderGuid:Guid}",
+            defaults: new { controller = "VivaPaymentsPublic", action = "OrderCompleted" });
     }
 }

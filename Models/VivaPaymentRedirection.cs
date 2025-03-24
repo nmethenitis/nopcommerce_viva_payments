@@ -17,4 +17,11 @@ public class VivaPaymentRedirection {
     public string EventId { get; set; }
     [FromQuery(Name = "eci")]
     public string Eci { get; set; }
+    [FromQuery(Name ="cancel")]
+    public string Cancel { get; set; }
+    public bool IsCancelled {
+        get {
+            return Cancel == "1";
+        }
+    }
 }

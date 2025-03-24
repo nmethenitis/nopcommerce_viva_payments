@@ -66,8 +66,8 @@ public class VivaPaymentsPublicController : BasePaymentController {
                 }
                 await _orderProcessingService.MarkAsAuthorizedAsync(order);
             }
-            await _orderService.UpdateOrderAsync(order);
-            return RedirectToRoute("CheckoutCompleted", new { orderId = order.Id });
+            await _orderService.UpdateOrderAsync(order);            
+            return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
         } else {
             throw new NopException("Viva transaction result is null");
         }
@@ -81,9 +81,10 @@ public class VivaPaymentsPublicController : BasePaymentController {
         if (!string.IsNullOrEmpty(vivaPaymentRedirection.TransactionId)) {
             var vivaTransactionResponse = await _vivaApiService.GetTransactionDetailsAsync(vivaPaymentRedirection.TransactionId);
         }
+        var message = vivaPaymentRedirection.IsCancelled ? "Payment has been Cancelled by User" : $"Payment failed with event id: {vivaPaymentRedirection.EventId} - {Constants.EventIds[vivaPaymentRedirection.EventId]}";
         await _orderService.InsertOrderNoteAsync(new OrderNote {
             OrderId = order.Id,
-            Note = $"Payment failed with event id: {vivaPaymentRedirection.EventId} - {Constants.EventIds[vivaPaymentRedirection.EventId]}",
+            Note = message,
             DisplayToCustomer = false,
             CreatedOnUtc = DateTime.UtcNow
         });
@@ -96,5 +97,13 @@ public class VivaPaymentsPublicController : BasePaymentController {
         }
         var order = _orderRepository.Table.FirstOrDefault(x => x.AuthorizationTransactionCode == vivaPaymentWebhookRequest.EventData.OrderCode.ToString());
         return RedirectToRoute("CheckoutCompleted", new { orderId = order.Id });
+    }
+
+    public async Task<IActionResult> OrderCompleted(Guid orderGuid) {
+        var order = await _orderService.GetOrderByGuidAsync(orderGuid);
+        if (order == null) {
+            return NotFound();
+        }
+        return View("~/Plugins/Payments.VivaPayments/Views/Completed.cshtml", order);
     }
 }

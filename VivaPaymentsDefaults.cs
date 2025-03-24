@@ -21,4 +21,5 @@ public class VivaPaymentsDefaults {
     public static string SuccessPaymentRouteName = "Plugin.Payments.VivaPayments.SuccessPayment";
     public static string FailPaymentRouteName = "Plugin.Payments.VivaPayments.FailPayment";
     public static string WebhookPaymentRouteName = "Plugin.Payments.VivaPayments.Webhook";
+    public static string OrderCompletedRouteName = "Plugin.Payments.VivaPayments.OrderCompleted";
 }   

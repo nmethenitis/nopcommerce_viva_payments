@@ -58,6 +58,22 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     }
 
     #endregion
+
+    public override async Task InstallAsync() {
+        await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string> {
+            ["Plugins.Payments.VivaPayments.Payment.Status"] = "Payment status",
+            ["Plugins.Payments.VivaPayments.Payment.Status.Success"] = "Success",
+            ["Plugins.Payments.VivaPayments.Payment.Status.Fail"] = "Fail",
+            ["Plugins.Payments.VivaPayments.Payment.Status.Message"] = "Message",
+        });
+        await base.InstallAsync();
+    }
+
+    public override async Task UninstallAsync() {
+        await _localizationService.DeleteLocaleResourcesAsync("Plugins.Payments.VivaPayments");
+        await base.UninstallAsync();
+    }
+
     public bool SupportCapture => false;
 
     public bool SupportPartiallyRefund => true;
