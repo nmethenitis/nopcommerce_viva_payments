@@ -65,6 +65,21 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
             ["Plugins.Payments.VivaPayments.Payment.Status.Success"] = "Success",
             ["Plugins.Payments.VivaPayments.Payment.Status.Fail"] = "Fail",
             ["Plugins.Payments.VivaPayments.Payment.Status.Message"] = "Message",
+            ["Plugins.Payments.VivaPayments.Payment.Info.Description"] = "Pay by credit card / viva wallet / IRIS / Google pay / Apple pay through Viva Wallet payment gateway",
+            ["Plugins.Payments.VivaPayments.Fields.SourceCode"] = "Source Code",
+            ["Plugins.Payments.VivaPayments.Fields.MerchantId"] = "Merchant ID",
+            ["Plugins.Payments.VivaPayments.Fields.ApiKey"] = "Api Key",
+            ["Plugins.Payments.VivaPayments.Fields.IsSandbox"] = "Use Sandbox",
+            ["Plugins.Payments.VivaPayments.Fields.ClientId"] = "Client ID",
+            ["Plugins.Payments.VivaPayments.Fields.ClientSecret"] = "Client Secret",
+            ["Plugins.Payments.VivaPayments.Fields.PreAuth"] = "Pre Auth",
+            ["Plugins.Payments.VivaPayments.Fields.DisableExactAmount"] = "Disable Exact Amount",
+            ["Plugins.Payments.VivaPayments.Fields.DisableCash"] = "Disable Cash",
+            ["Plugins.Payments.VivaPayments.Fields.DisableWallet"] = "Disable Wallet",
+            ["Plugins.Payments.VivaPayments.Fields.PaymentTitle"] = "Title",
+            ["Plugins.Payments.VivaPayments.Fields.PaymentDescription"] = "Description",
+            ["Plugins.Payments.VivaPayments.Fields.EnableInstallments"] = "Enable Installments",
+            ["Plugins.Payments.VivaPayments.Fields.MinInstallments"] = "Min Installment Amount",
         });
         await base.InstallAsync();
     }
@@ -80,7 +95,7 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
 
     public bool SupportRefund => true;
 
-    public bool SupportVoid => false;
+    public bool SupportVoid => true;
 
     public RecurringPaymentType RecurringPaymentType => RecurringPaymentType.NotSupported;
 
@@ -97,7 +112,7 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     }
 
     public Task<bool> CanRePostProcessPaymentAsync(Order order) {
-        return Task.FromResult(false);
+        return Task.FromResult(true);
     }
 
     public Task<CapturePaymentResult> CaptureAsync(CapturePaymentRequest capturePaymentRequest) {
@@ -112,12 +127,12 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
         return Task.FromResult(new ProcessPaymentRequest());
     }
 
-    public Task<string> GetPaymentMethodDescriptionAsync() {
-        return Task.FromResult(string.Empty);
+    public async Task<string> GetPaymentMethodDescriptionAsync() {
+        return await _localizationService.GetResourceAsync("Plugins.Payments.VivaPayments.Payment.Info.Description");
     }
 
     public Type GetPublicViewComponent() {
-        return typeof(VivaPaymentsInfoViewComponent);
+        return typeof(PaymentInfoViewComponent);
     }
 
     public Task<bool> HidePaymentMethodAsync(IList<ShoppingCartItem> cart) {
@@ -180,15 +195,25 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
         if (vivaTransactionCancelResponse.Success.HasValue && vivaTransactionCancelResponse.Success.Value) {
             return new RefundPaymentResult { NewPaymentStatus = refundPaymentRequest.IsPartialRefund ? PaymentStatus.PartiallyRefunded : PaymentStatus.Refunded};
         }
-        return new RefundPaymentResult { Errors = new[] { "Something went wrong" } };
+        return new RefundPaymentResult { Errors = new[] { $"Reversal failed with code: {vivaTransactionCancelResponse.ErrorCode} and message: {vivaTransactionCancelResponse.ErrorText}" } };
     }
 
     public Task<IList<string>> ValidatePaymentFormAsync(IFormCollection form) {
         return Task.FromResult<IList<string>>(new List<string>());
     }
 
-    public Task<VoidPaymentResult> VoidAsync(VoidPaymentRequest voidPaymentRequest) {
-        return Task.FromResult(new VoidPaymentResult { Errors = new[] { "Method not supported" } });
+    public async Task<VoidPaymentResult> VoidAsync(VoidPaymentRequest voidPaymentRequest) {
+        var order = voidPaymentRequest.Order;
+        var vivaTransactionCancelRequest = new VivaTransactionCancelRequest() {
+            Amount = (int)order.OrderTotal * 100,
+            SourceCode = _vivaPaymentsSettings.SourceCode,
+            TransactionId = order.CaptureTransactionId
+        };
+        var vivaTransactionCancelResponse = await _vivaApiService.CancelTransaction(vivaTransactionCancelRequest);
+        if (vivaTransactionCancelResponse.Success.HasValue && vivaTransactionCancelResponse.Success.Value) {
+            return new VoidPaymentResult { NewPaymentStatus = PaymentStatus.Voided };
+        }
+        return new VoidPaymentResult { Errors = new[] { "Something went wrong" } };
     }
 
     private int CalculateMaxInstallments(decimal orderTotal, decimal minInstallmentAmount) {

@@ -10,13 +10,13 @@ using Nop.Services.Localization;
 using Nop.Web.Framework.Components;
 
 namespace Nop.Plugin.Payments.VivaPayments.Components;
-public class VivaPaymentsInfoViewComponent : NopViewComponent {
+public class PaymentInfoViewComponent : NopViewComponent {
     protected readonly VivaPaymentsSettings _vivaPaymentsSettings;
     protected readonly ILocalizationService _localizationService;
     protected readonly IStoreContext _storeContext;
     protected readonly IWorkContext _workContext;
 
-    public VivaPaymentsInfoViewComponent(VivaPaymentsSettings vivaPaymentsSettings,
+    public PaymentInfoViewComponent(VivaPaymentsSettings vivaPaymentsSettings,
         ILocalizationService localizationService,
         IStoreContext storeContext,
         IWorkContext workContext) {
@@ -27,7 +27,7 @@ public class VivaPaymentsInfoViewComponent : NopViewComponent {
     }
 
     /// <returns>A task that represents the asynchronous operation</returns>
-    public async Task<IViewComponentResult> InvokeAsync() {
+    public async Task<IViewComponentResult> InvokeAsync(string widgetZone, object additionalData) {
         var store = await _storeContext.GetCurrentStoreAsync();
 
         var model = new VivaPaymentInfoModel {

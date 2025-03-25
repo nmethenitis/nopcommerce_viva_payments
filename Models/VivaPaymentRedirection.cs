@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Nop.Plugin.Payments.VivaPayments.Models;
 public class VivaPaymentRedirection {
-    [FromQuery(Name = "transaction")]
+    [FromQuery(Name = "t")]
     public string TransactionId { get; set; }
-    [FromQuery(Name = "code")]
+    [FromQuery(Name = "s")]
     public string OrderCode { get; set; }
     [FromQuery(Name = "lang")]
     public string Lang { get; set; }
