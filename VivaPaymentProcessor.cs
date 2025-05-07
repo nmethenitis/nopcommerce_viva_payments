@@ -61,31 +61,31 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
 
     public override async Task InstallAsync() {
         await _localizationService.AddOrUpdateLocaleResourceAsync(new Dictionary<string, string> {
-            ["Plugins.Payments.VivaPayments.Payment.Status"] = "Payment status",
-            ["Plugins.Payments.VivaPayments.Payment.Status.Success"] = "Success",
-            ["Plugins.Payments.VivaPayments.Payment.Status.Fail"] = "Fail",
-            ["Plugins.Payments.VivaPayments.Payment.Status.Message"] = "Message",
-            ["Plugins.Payments.VivaPayments.Payment.Info.Description"] = "Pay by credit card / viva wallet / IRIS / Google pay / Apple pay through Viva Wallet payment gateway",
-            ["Plugins.Payments.VivaPayments.Fields.SourceCode"] = "Source Code",
-            ["Plugins.Payments.VivaPayments.Fields.MerchantId"] = "Merchant ID",
-            ["Plugins.Payments.VivaPayments.Fields.ApiKey"] = "Api Key",
-            ["Plugins.Payments.VivaPayments.Fields.IsSandbox"] = "Use Sandbox",
-            ["Plugins.Payments.VivaPayments.Fields.ClientId"] = "Client ID",
-            ["Plugins.Payments.VivaPayments.Fields.ClientSecret"] = "Client Secret",
-            ["Plugins.Payments.VivaPayments.Fields.PreAuth"] = "Pre Auth",
-            ["Plugins.Payments.VivaPayments.Fields.DisableExactAmount"] = "Disable Exact Amount",
-            ["Plugins.Payments.VivaPayments.Fields.DisableCash"] = "Disable Cash",
-            ["Plugins.Payments.VivaPayments.Fields.DisableWallet"] = "Disable Wallet",
-            ["Plugins.Payments.VivaPayments.Fields.PaymentTitle"] = "Title",
-            ["Plugins.Payments.VivaPayments.Fields.PaymentDescription"] = "Description",
-            ["Plugins.Payments.VivaPayments.Fields.EnableInstallments"] = "Enable Installments",
-            ["Plugins.Payments.VivaPayments.Fields.MinInstallments"] = "Min Installment Amount",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Payment.Status"] = "Payment status",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Payment.Status.Success"] = "Success",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Payment.Status.Fail"] = "Fail",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Payment.Status.Message"] = "Message",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Payment.Info.Description"] = "Pay by credit card / viva wallet / IRIS / Google pay / Apple pay through Viva Wallet payment gateway",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.SourceCode"] = "Source Code",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.MerchantId"] = "Merchant ID",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.ApiKey"] = "Api Key",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.IsSandbox"] = "Use Sandbox",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.ClientId"] = "Client ID",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.ClientSecret"] = "Client Secret",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.PreAuth"] = "Pre Auth",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.DisableExactAmount"] = "Disable Exact Amount",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.DisableCash"] = "Disable Cash",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.DisableWallet"] = "Disable Wallet",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.PaymentTitle"] = "Title",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.PaymentDescription"] = "Description",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.EnableInstallments"] = "Enable Installments",
+            [$"Plugins.{VivaPaymentsDefaults.PluginName}.Fields.MinInstallments"] = "Min Installment Amount",
         });
         await base.InstallAsync();
     }
 
     public override async Task UninstallAsync() {
-        await _localizationService.DeleteLocaleResourcesAsync("Plugins.Payments.VivaPayments");
+        await _localizationService.DeleteLocaleResourcesAsync($"Plugins.{VivaPaymentsDefaults.PluginName}");
         await base.UninstallAsync();
     }
 
@@ -128,7 +128,7 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     }
 
     public async Task<string> GetPaymentMethodDescriptionAsync() {
-        return await _localizationService.GetResourceAsync("Plugins.Payments.VivaPayments.Payment.Info.Description");
+        return await _localizationService.GetResourceAsync($"Plugins.{VivaPaymentsDefaults.PluginName}.Payment.Info.Description");
     }
 
     public Type GetPublicViewComponent() {
