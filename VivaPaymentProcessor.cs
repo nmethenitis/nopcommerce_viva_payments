@@ -146,7 +146,7 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
             var langCode = _workContext.GetWorkingLanguageAsync().Result.LanguageCulture;
             var currencyCode = Constants.CurrencyCodeToNumeric[_workContext.GetWorkingCurrencyAsync().Result.CurrencyCode];
             var paymentOrderRequest = new VivaPaymentOrderRequest() {
-                Amount = (int)order.OrderTotal * 100,
+                Amount = (int)(order.OrderTotal * 100),
                 Customer = new Customer() {
                     Email = customer.Email,
                     FullName = $"{customer.FirstName} {customer.LastName}",
