@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nop.Plugin.Payments.VivaPayments.Models;
+﻿namespace Nop.Plugin.Payments.VivaPayments.Models;
 public class VivaPaymentWebhookRequest {
     public string Url { get; set; }
     public EventData? EventData { get; set; }

@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
-using FluentMigrator.Runner;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
@@ -66,7 +60,7 @@ public class VivaPaymentsPublicController : BasePaymentController {
                 }
                 await _orderProcessingService.MarkAsAuthorizedAsync(order);
             }
-            await _orderService.UpdateOrderAsync(order);            
+            await _orderService.UpdateOrderAsync(order);
             return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
         } else {
             throw new NopException("Viva transaction result is null");

@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Razor.TagHelpers;
+﻿using Microsoft.AspNetCore.Http;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Payments;
@@ -187,13 +180,13 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     public async Task<RefundPaymentResult> RefundAsync(RefundPaymentRequest refundPaymentRequest) {
         var order = refundPaymentRequest.Order;
         var vivaTransactionCancelRequest = new VivaTransactionCancelRequest() {
-            Amount = (int)refundPaymentRequest.AmountToRefund*100,
+            Amount = (int)(refundPaymentRequest.AmountToRefund * 100),
             SourceCode = _vivaPaymentsSettings.SourceCode,
             TransactionId = order.CaptureTransactionId
         };
         var vivaTransactionCancelResponse = await _vivaApiService.CancelTransaction(vivaTransactionCancelRequest);
-        if (vivaTransactionCancelResponse.Success.HasValue && vivaTransactionCancelResponse.Success.Value) {
-            return new RefundPaymentResult { NewPaymentStatus = refundPaymentRequest.IsPartialRefund ? PaymentStatus.PartiallyRefunded : PaymentStatus.Refunded};
+        if (vivaTransactionCancelResponse.Success) {
+            return new RefundPaymentResult { NewPaymentStatus = refundPaymentRequest.IsPartialRefund ? PaymentStatus.PartiallyRefunded : PaymentStatus.Refunded };
         }
         return new RefundPaymentResult { Errors = new[] { $"Reversal failed with code: {vivaTransactionCancelResponse.ErrorCode} and message: {vivaTransactionCancelResponse.ErrorText}" } };
     }
@@ -205,12 +198,12 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     public async Task<VoidPaymentResult> VoidAsync(VoidPaymentRequest voidPaymentRequest) {
         var order = voidPaymentRequest.Order;
         var vivaTransactionCancelRequest = new VivaTransactionCancelRequest() {
-            Amount = (int)order.OrderTotal * 100,
+            Amount = (int)(order.OrderTotal * 100),
             SourceCode = _vivaPaymentsSettings.SourceCode,
             TransactionId = order.CaptureTransactionId
         };
         var vivaTransactionCancelResponse = await _vivaApiService.CancelTransaction(vivaTransactionCancelRequest);
-        if (vivaTransactionCancelResponse.Success.HasValue && vivaTransactionCancelResponse.Success.Value) {
+        if (vivaTransactionCancelResponse.Success) {
             return new VoidPaymentResult { NewPaymentStatus = PaymentStatus.Voided };
         }
         return new VoidPaymentResult { Errors = new[] { "Something went wrong" } };
@@ -218,9 +211,9 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
 
     private int CalculateMaxInstallments(decimal orderTotal, decimal minInstallmentAmount) {
         var installments = Math.Floor(orderTotal / minInstallmentAmount);
-        if(installments >= 3 && installments <= 12) {
+        if (installments >= 3 && installments <= 12) {
             return (int)installments;
-        }else if (installments > 12) {
+        } else if (installments > 12) {
             return 12;
         }
         return 0;

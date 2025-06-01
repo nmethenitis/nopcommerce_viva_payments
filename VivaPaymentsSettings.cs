@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Nop.Core.Configuration;
+﻿using Nop.Core.Configuration;
 
 namespace Nop.Plugin.Payments.VivaPayments;
-public class VivaPaymentsSettings : ISettings
-{
+public class VivaPaymentsSettings : ISettings {
     public string SourceCode { get; set; }
     public string MerchantId { get; set; }
-    public string ApiKey { get;set; }
+    public string ApiKey { get; set; }
     public bool IsSandbox { get; set; }
     public bool PreAuth { get; set; } = false;
     public bool DisableExactAmount { get; set; } = false;

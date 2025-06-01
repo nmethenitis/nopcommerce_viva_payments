@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Nop.Plugin.Payments.VivaPayments.Helpers;
+﻿namespace Nop.Plugin.Payments.VivaPayments.Helpers;
 public static class Constants {
     public static Dictionary<string, int> CurrencyCodeToNumeric = new Dictionary<string, int>{
         { "USD", 840 }, // United States Dollar

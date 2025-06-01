@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Google.Apis.Auth.OAuth2;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Plugin.Payments.VivaPayments.Models;
 using Nop.Services.Configuration;
@@ -20,8 +14,7 @@ namespace Nop.Plugin.Payments.VivaPayments.Controllers;
 [AuthorizeAdmin]
 [Area(AreaNames.ADMIN)]
 [AutoValidateAntiforgeryToken]
-public class VivaPaymentsController : BasePaymentController
-{
+public class VivaPaymentsController : BasePaymentController {
     #region Fields
 
     protected readonly ILocalizationService _localizationService;
@@ -37,8 +30,7 @@ public class VivaPaymentsController : BasePaymentController
         INotificationService notificationService,
         IPermissionService permissionService,
         ISettingService settingService,
-        IStoreContext storeContext)
-    {
+        IStoreContext storeContext) {
         _localizationService = localizationService;
         _notificationService = notificationService;
         _permissionService = permissionService;
@@ -49,12 +41,12 @@ public class VivaPaymentsController : BasePaymentController
     #endregion
     #region Methods
     [CheckPermission(StandardPermission.Configuration.MANAGE_PAYMENT_METHODS)]
-    public async Task<IActionResult> Configure(){
+    public async Task<IActionResult> Configure() {
         //load settings for a chosen store scope
         var storeScope = await _storeContext.GetActiveStoreScopeConfigurationAsync();
         var vivaPaymentSettings = await _settingService.LoadSettingAsync<VivaPaymentsSettings>(storeScope);
 
-        var model = new ConfigurationModel{
+        var model = new ConfigurationModel {
             SourceCode = vivaPaymentSettings.SourceCode,
             MerchantId = vivaPaymentSettings.MerchantId,
             ApiKey = vivaPaymentSettings?.ApiKey,
@@ -66,7 +58,7 @@ public class VivaPaymentsController : BasePaymentController
             EnableInstallments = vivaPaymentSettings.EnableInstallments,
             MinInstallments = vivaPaymentSettings.MinInstallments
         };
-        if (storeScope > 0){
+        if (storeScope > 0) {
             model.SourceCode_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.SourceCode, storeScope);
             model.MerchantId_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.MerchantId, storeScope);
             model.ApiKey_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.ApiKey, storeScope);
@@ -84,7 +76,7 @@ public class VivaPaymentsController : BasePaymentController
 
     [HttpPost]
     [CheckPermission(StandardPermission.Configuration.MANAGE_PAYMENT_METHODS)]
-    public async Task<IActionResult> Configure(ConfigurationModel model){
+    public async Task<IActionResult> Configure(ConfigurationModel model) {
         if (!ModelState.IsValid)
             return await Configure();
 

@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using AutoMapper.Execution;
 
 namespace Nop.Plugin.Payments.VivaPayments.Helpers;
 public static class JsonSerializerOptionDefaults {

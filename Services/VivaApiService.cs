@@ -1,33 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Net.Http.Headers;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Routing;
-using Nop.Core.Domain.Directory;
-using Nop.Core;
-using Nop.Services.Directory;
-using Nop.Services.Localization;
-using Nop.Services.Messages;
-using Nop.Services.Payments;
-using Nop.Services.Logging;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using System.Net.Http;
-using Nop.Plugin.Payments.VivaPayments.Models;
 using System.Text.Json;
 using Nop.Plugin.Payments.VivaPayments.Helpers;
-using System.Net.Mime;
-using System.Net.Http.Headers;
-using System.Transactions;
+using Nop.Plugin.Payments.VivaPayments.Models;
 
 namespace Nop.Plugin.Payments.VivaPayments.Services;
-public class VivaApiService{
+public class VivaApiService {
 
     private readonly VivaPaymentsSettings _vivaPaymentSettings;
 
 
-    public VivaApiService(VivaPaymentsSettings vivaPaymentsSettings){
+    public VivaApiService(VivaPaymentsSettings vivaPaymentsSettings) {
         _vivaPaymentSettings = vivaPaymentsSettings;
     }
 
@@ -81,18 +64,18 @@ public class VivaApiService{
         }
     }
 
-    public async Task<string> GetTokenAsync(){
-        using (var client = new HttpClient()){
+    public async Task<string> GetTokenAsync() {
+        using (var client = new HttpClient()) {
             var base64Encoded = EncodeToBase64($"{_vivaPaymentSettings.ClientId}:{_vivaPaymentSettings.ClientSecret}");
             client.BaseAddress = new Uri(GetAccountBaseUrl());
             client.DefaultRequestHeaders.Add("Authorization", $"Basic {base64Encoded}");
-            var requestContent = new StringContent("grant_type=client_credentials",Encoding.UTF8, "application/x-www-form-urlencoded");
+            var requestContent = new StringContent("grant_type=client_credentials", Encoding.UTF8, "application/x-www-form-urlencoded");
             var httpResponseMessage = await client.PostAsync(VivaPaymentsDefaults.AuthPath, requestContent);
             if (httpResponseMessage.IsSuccessStatusCode) {
                 var httpResponseContent = await httpResponseMessage.Content.ReadAsStringAsync();
                 var response = JsonSerializer.Deserialize<VivaIdentityResponse>(httpResponseContent, JsonSerializerOptionDefaults.GetDefaultSettings());
                 return response.AccessToken;
-            }else{
+            } else {
                 throw new Exception($"Error: {httpResponseMessage.StatusCode} - {httpResponseMessage.ReasonPhrase}");
             }
         }
@@ -102,8 +85,8 @@ public class VivaApiService{
         return EncodeToBase64($"{_vivaPaymentSettings.MerchantId}:{_vivaPaymentSettings.ApiKey}");
     }
 
-    private string EncodeToBase64(string input){
-        if (string.IsNullOrEmpty(input)){
+    private string EncodeToBase64(string input) {
+        if (string.IsNullOrEmpty(input)) {
             throw new ArgumentException("Input cannot be null or empty", nameof(input));
         }
         byte[] bytes = Encoding.UTF8.GetBytes(input);

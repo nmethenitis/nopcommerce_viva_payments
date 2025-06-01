@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Nop.Plugin.Payments.VivaPayments.Models;
 public class VivaPaymentRedirection {
@@ -17,7 +12,7 @@ public class VivaPaymentRedirection {
     public string EventId { get; set; }
     [FromQuery(Name = "eci")]
     public string Eci { get; set; }
-    [FromQuery(Name ="cancel")]
+    [FromQuery(Name = "cancel")]
     public string Cancel { get; set; }
     public bool IsCancelled {
         get {
