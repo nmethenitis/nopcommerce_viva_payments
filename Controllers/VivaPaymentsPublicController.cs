@@ -31,37 +31,41 @@ public class VivaPaymentsPublicController : BasePaymentController {
         if (vivaTransactionResponse != null) {
             var paymentStatus = Common.GetPaymentStatus(vivaTransactionResponse.StatusId);
             var order = _orderRepository.Table.FirstOrDefault(x => x.AuthorizationTransactionCode == vivaPaymentRedirection.OrderCode);
-            order.CaptureTransactionId = vivaPaymentRedirection.TransactionId;
-            await _orderService.InsertOrderNoteAsync(new OrderNote {
-                OrderId = order.Id,
-                Note = JsonSerializer.Serialize(vivaTransactionResponse),
-                DisplayToCustomer = false,
-                CreatedOnUtc = DateTime.UtcNow
-            });
-            if (order.OrderTotal != (decimal)vivaTransactionResponse.Amount) {
-                var message = $"There is a diference between paid amount ({vivaTransactionResponse.Amount}) and order amount ({order.OrderTotal})";
+            if (order != null) {
                 order.CaptureTransactionId = vivaPaymentRedirection.TransactionId;
                 await _orderService.InsertOrderNoteAsync(new OrderNote {
                     OrderId = order.Id,
-                    Note = message,
+                    Note = JsonSerializer.Serialize(vivaTransactionResponse),
                     DisplayToCustomer = false,
                     CreatedOnUtc = DateTime.UtcNow
                 });
+                if (order.OrderTotal != (decimal)vivaTransactionResponse.Amount) {
+                    var message = $"There is a diference between paid amount ({vivaTransactionResponse.Amount}) and order amount ({order.OrderTotal})";
+                    order.CaptureTransactionId = vivaPaymentRedirection.TransactionId;
+                    await _orderService.InsertOrderNoteAsync(new OrderNote {
+                        OrderId = order.Id,
+                        Note = message,
+                        DisplayToCustomer = false,
+                        CreatedOnUtc = DateTime.UtcNow
+                    });
+                    return RedirectToAction("Index", "Home", new { area = string.Empty });
+                }
+                if (paymentStatus == PaymentStatus.Paid) {
+                    if (!_orderProcessingService.CanMarkOrderAsPaid(order)) {
+                        return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
+                    }
+                    await _orderProcessingService.MarkOrderAsPaidAsync(order);
+                } else if (paymentStatus == PaymentStatus.Authorized) {
+                    if (!_orderProcessingService.CanMarkOrderAsAuthorized(order)) {
+                        return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
+                    }
+                    await _orderProcessingService.MarkAsAuthorizedAsync(order);
+                }
+                await _orderService.UpdateOrderAsync(order);
+                return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
+            } else {
                 return RedirectToAction("Index", "Home", new { area = string.Empty });
             }
-            if (paymentStatus == PaymentStatus.Paid) {
-                if (!_orderProcessingService.CanMarkOrderAsPaid(order)) {
-                    return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
-                }
-                await _orderProcessingService.MarkOrderAsPaidAsync(order);
-            } else if (paymentStatus == PaymentStatus.Authorized) {
-                if (!_orderProcessingService.CanMarkOrderAsAuthorized(order)) {
-                    return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
-                }
-                await _orderProcessingService.MarkAsAuthorizedAsync(order);
-            }
-            await _orderService.UpdateOrderAsync(order);
-            return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
         } else {
             throw new NopException("Viva transaction result is null");
         }
@@ -85,12 +89,52 @@ public class VivaPaymentsPublicController : BasePaymentController {
         return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
     }
 
-    public async Task<IActionResult> PaymentWebhook([FromQuery] VivaPaymentWebhookRequest vivaPaymentWebhookRequest) {
+    public async Task<IActionResult> PaymentWebhook([FromBody] VivaPaymentWebhookRequest vivaPaymentWebhookRequest) {
         if (vivaPaymentWebhookRequest == null) {
-            throw new NopException("Viva redirection result is null");
+            throw new NopException("Viva payment webhook result is null");
         }
-        var order = _orderRepository.Table.FirstOrDefault(x => x.AuthorizationTransactionCode == vivaPaymentWebhookRequest.EventData.OrderCode.ToString());
-        return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
+        if((int)vivaPaymentWebhookRequest.EventTypeId != (int)EventTypes.TransactionPaymentCreated) {
+            return BadRequest();
+        }
+        var eventData = vivaPaymentWebhookRequest.EventData;
+        var paymentStatus = Common.GetPaymentStatus(eventData.StatusId);
+        var order = _orderRepository.Table.FirstOrDefault(x => x.AuthorizationTransactionCode == eventData.OrderCode.ToString());
+        if (order != null) {
+            order.CaptureTransactionId = eventData.TransactionId;
+            await _orderService.InsertOrderNoteAsync(new OrderNote {
+                OrderId = order.Id,
+                Note = JsonSerializer.Serialize(eventData),
+                DisplayToCustomer = false,
+                CreatedOnUtc = DateTime.UtcNow
+            });
+            if (order.OrderTotal != (decimal)eventData.Amount) {
+                var message = $"There is a diference between paid amount ({eventData.Amount}) and order amount ({order.OrderTotal})";
+                order.CaptureTransactionId = eventData.TransactionId;
+                await _orderService.InsertOrderNoteAsync(new OrderNote {
+                    OrderId = order.Id,
+                    Note = message,
+                    DisplayToCustomer = false,
+                    CreatedOnUtc = DateTime.UtcNow
+                });
+                return BadRequest();
+            }
+            if (paymentStatus == PaymentStatus.Paid) {
+                if (!_orderProcessingService.CanMarkOrderAsPaid(order)) {
+                    return NoContent();
+                }
+                await _orderProcessingService.MarkOrderAsPaidAsync(order);
+            } else if (paymentStatus == PaymentStatus.Authorized) {
+                if (!_orderProcessingService.CanMarkOrderAsAuthorized(order)) {
+                    return NoContent();
+                }
+                await _orderProcessingService.MarkAsAuthorizedAsync(order);
+            }
+            await _orderService.UpdateOrderAsync(order);
+            return NoContent();
+        } else {
+            return BadRequest();
+        }
+            return NoContent();
     }
 
     public async Task<IActionResult> OrderCompleted(Guid orderGuid) {
