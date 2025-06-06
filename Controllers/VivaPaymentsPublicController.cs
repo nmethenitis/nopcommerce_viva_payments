@@ -23,6 +23,7 @@ public class VivaPaymentsPublicController : BasePaymentController {
         _orderProcessingService = orderProcessingService;
     }
 
+    [HttpGet]
     public async Task<IActionResult> PaymentSuccess([FromQuery] VivaPaymentRedirection vivaPaymentRedirection) {
         if (vivaPaymentRedirection == null) {
             throw new NopException("Viva redirection result is null");
@@ -71,6 +72,7 @@ public class VivaPaymentsPublicController : BasePaymentController {
         }
     }
 
+    [HttpGet]
     public async Task<IActionResult> PaymentFail([FromQuery] VivaPaymentRedirection vivaPaymentRedirection) {
         if (vivaPaymentRedirection == null) {
             throw new NopException("Viva redirection result is null");
@@ -79,7 +81,7 @@ public class VivaPaymentsPublicController : BasePaymentController {
         if (!string.IsNullOrEmpty(vivaPaymentRedirection.TransactionId)) {
             var vivaTransactionResponse = await _vivaApiService.GetTransactionDetailsAsync(vivaPaymentRedirection.TransactionId);
         }
-        var message = vivaPaymentRedirection.IsCancelled ? "Payment has been Cancelled by User" : $"Payment failed with event id: {vivaPaymentRedirection.EventId} - {Constants.EventIds[vivaPaymentRedirection.EventId]}";
+        var message = vivaPaymentRedirection.IsCancelled ? "Payment has been Cancelled by User" : $"Payment failed with event id: {vivaPaymentRedirection.EventId} - {Constants.GetErrorDescription(vivaPaymentRedirection.EventId)}";
         await _orderService.InsertOrderNoteAsync(new OrderNote {
             OrderId = order.Id,
             Note = message,
@@ -89,6 +91,12 @@ public class VivaPaymentsPublicController : BasePaymentController {
         return RedirectToRoute(VivaPaymentsDefaults.OrderCompletedRouteName, new { orderGuid = order.OrderGuid.ToString() });
     }
 
+    [HttpGet]
+    public async Task<IActionResult> PaymentWebhook() {
+        return Ok("true");
+    }
+
+    [HttpPost]
     public async Task<IActionResult> PaymentWebhook([FromBody] VivaPaymentWebhookRequest vivaPaymentWebhookRequest) {
         if (vivaPaymentWebhookRequest == null) {
             throw new NopException("Viva payment webhook result is null");
