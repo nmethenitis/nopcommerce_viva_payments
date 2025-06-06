@@ -1,4 +1,6 @@
-﻿namespace Nop.Plugin.Payments.VivaPayments.Helpers;
+﻿using Nop.Plugin.Payments.VivaPayments.Models;
+
+namespace Nop.Plugin.Payments.VivaPayments.Helpers;
 public static class Constants {
     public static Dictionary<string, int> CurrencyCodeToNumeric = new Dictionary<string, int>{
         { "USD", 840 }, // United States Dollar
@@ -107,4 +109,13 @@ public static class Constants {
         { "101003", "PaymentMethodsParseResponseFailed" },
         { "101407", "KlarnaStatusCancelled" }
     };
+
+    public static string GetErrorDescription(string eventId) {
+        Constants.EventIds.TryGetValue(eventId, out var eventDescription);
+        try {
+            return !string.IsNullOrEmpty(eventDescription) ? eventDescription : eventId;
+        }catch(Exception ex) {
+            return eventId;
+        }
+    }
 }
