@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Payments;
@@ -30,24 +31,26 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
     protected readonly VivaApiService _vivaApiService;
     protected readonly IHttpContextAccessor _httpContextAccessor;
     protected readonly IOrderService _orderService;
+    protected readonly ILogger<VivaPaymentProcessor> _logger;
 
     #endregion
 
     #region Ctor
 
-    public VivaPaymentProcessor(ILocalizationService localizationService, IOrderTotalCalculationService orderTotalCalculationService, ISettingService settingService, IWebHelper webHelper, IPaymentService paymentService, ICustomerService customerService, IWorkContext workContext, IStoreContext storeContext, VivaPaymentsSettings vivaPaymentsSettings, VivaApiService vivaApiService, IHttpContextAccessor httpContextAccessor, IOrderService orderService) {
-        _localizationService = localizationService;
-        _orderTotalCalculationService = orderTotalCalculationService;
-        _settingService = settingService;
-        _webHelper = webHelper;
-        _paymentService = paymentService;
-        _customerService = customerService;
-        _workContext = workContext;
-        _storeContext = storeContext;
-        _vivaPaymentsSettings = vivaPaymentsSettings;
-        _vivaApiService = vivaApiService;
-        _httpContextAccessor = httpContextAccessor;
-        _orderService = orderService;
+    public VivaPaymentProcessor(ILocalizationService localizationService, IOrderTotalCalculationService orderTotalCalculationService, ISettingService settingService, IWebHelper webHelper, IPaymentService paymentService, ICustomerService customerService, IWorkContext workContext, IStoreContext storeContext, VivaPaymentsSettings vivaPaymentsSettings, VivaApiService vivaApiService, IHttpContextAccessor httpContextAccessor, IOrderService orderService, ILogger<VivaPaymentProcessor> logger) {
+        _localizationService = localizationService ?? throw new ArgumentNullException(nameof(localizationService));
+        _orderTotalCalculationService = orderTotalCalculationService ?? throw new ArgumentNullException(nameof(orderTotalCalculationService));
+        _settingService = settingService ?? throw new ArgumentNullException(nameof(settingService));
+        _webHelper = webHelper ?? throw new ArgumentNullException(nameof(webHelper));
+        _paymentService = paymentService ?? throw new ArgumentNullException(nameof(paymentService));
+        _customerService = customerService ?? throw new ArgumentNullException(nameof(customerService));
+        _workContext = workContext ?? throw new ArgumentNullException(nameof(workContext));
+        _storeContext = storeContext ?? throw new ArgumentNullException(nameof(storeContext));
+        _vivaPaymentsSettings = vivaPaymentsSettings ?? throw new ArgumentNullException(nameof(vivaPaymentsSettings));
+        _vivaApiService = vivaApiService ?? throw new ArgumentNullException(nameof(vivaApiService));
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
+        _orderService = orderService ?? throw new ArgumentNullException(nameof(orderService));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     #endregion
@@ -162,10 +165,11 @@ public class VivaPaymentProcessor : BasePlugin, IPaymentMethod {
                 _httpContextAccessor.HttpContext.Response.Redirect(redirectUrl);
                 return;
             } else {
-                throw new NopException("Viva payment result is null");
+                throw new Exception("Viva payment result is null");
             }
         } catch (Exception ex) {
-            throw new NopException($"Error: {ex.Source} - {ex.Message}");
+            _logger.LogError(ex, "Error during post process payment");
+            throw new Exception($"Error: {ex.Source} - {ex.Message}");
         }
     }
 
