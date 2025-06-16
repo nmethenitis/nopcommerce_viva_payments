@@ -22,11 +22,11 @@ public class VivaTransactionResponse {
     public int TotalInstallments { get; set; }
     public string CardCountryCode { get; set; }
     public string CardUniqueReference { get; set; }
-    public object CardIssuingBank { get; set; } // Using object since the value can be null
-    public object EventId { get; set; } // Using object since the value can be null
+    public object? CardIssuingBank { get; set; } // Using object since the value can be null
+    public object? EventId { get; set; } // Using object since the value can be null
     public int CurrentInstallment { get; set; }
-    public int CardTypeId { get; set; }
-    public DateTime CardExpirationDate { get; set; }
+    public int? CardTypeId { get; set; }
+    public DateTime? CardExpirationDate { get; set; }
     public int? DigitalWalletId { get; set; }
     public List<LoyaltyTransaction> LoyaltyTransactions { get; set; }
 }
