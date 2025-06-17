@@ -41,7 +41,7 @@ public class VivaPaymentsPublicController : BasePaymentController {
                     CreatedOnUtc = DateTime.UtcNow
                 });
                 if (order.OrderTotal != (decimal)vivaTransactionResponse.Amount) {
-                    var message = $"There is a diference between paid amount ({vivaTransactionResponse.Amount}) and order amount ({order.OrderTotal})";
+                    var message = $"There is a diference between paid amount ({vivaTransactionResponse.Amount}) and order amount ({order.OrderTotal}) for OrderCode: {vivaPaymentRedirection.OrderCode}";
                     order.CaptureTransactionId = vivaPaymentRedirection.TransactionId;
                     await _orderService.InsertOrderNoteAsync(new OrderNote {
                         OrderId = order.Id,
@@ -81,7 +81,7 @@ public class VivaPaymentsPublicController : BasePaymentController {
         if (!string.IsNullOrEmpty(vivaPaymentRedirection.TransactionId)) {
             var vivaTransactionResponse = await _vivaApiService.GetTransactionDetailsAsync(vivaPaymentRedirection.TransactionId);
         }
-        var message = vivaPaymentRedirection.IsCancelled ? "Payment has been Cancelled by User" : $"Payment failed with event id: {vivaPaymentRedirection.EventId} - {Constants.GetErrorDescription(vivaPaymentRedirection.EventId)}";
+        var message = vivaPaymentRedirection.IsCancelled ? $"Payment for OrderCode: {vivaPaymentRedirection.OrderCode} has been Cancelled by User" : $"Payment for OrderCode: {vivaPaymentRedirection.OrderCode} failed with event id: {vivaPaymentRedirection.EventId} - {Constants.GetErrorDescription(vivaPaymentRedirection.EventId)}";
         await _orderService.InsertOrderNoteAsync(new OrderNote {
             OrderId = order.Id,
             Note = message,

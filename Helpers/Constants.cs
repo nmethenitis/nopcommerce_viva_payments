@@ -111,6 +111,9 @@ public static class Constants {
     };
 
     public static string GetErrorDescription(string eventId) {
+        if(eventId == null) {
+            return string.Empty;
+        }
         Constants.EventIds.TryGetValue(eventId, out var eventDescription);
         try {
             return !string.IsNullOrEmpty(eventDescription) ? eventDescription : eventId;
