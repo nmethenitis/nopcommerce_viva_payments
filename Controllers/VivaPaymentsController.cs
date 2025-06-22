@@ -22,20 +22,18 @@ public class VivaPaymentsController : BasePaymentController {
     protected readonly IPermissionService _permissionService;
     protected readonly ISettingService _settingService;
     protected readonly IStoreContext _storeContext;
+    protected readonly ILanguageService _languageService;
 
     #endregion
     #region Ctor
 
-    public VivaPaymentsController(ILocalizationService localizationService,
-        INotificationService notificationService,
-        IPermissionService permissionService,
-        ISettingService settingService,
-        IStoreContext storeContext) {
+    public VivaPaymentsController(ILocalizationService localizationService, INotificationService notificationService, IPermissionService permissionService, ISettingService settingService, IStoreContext storeContext, ILanguageService languageService) {
         _localizationService = localizationService;
         _notificationService = notificationService;
         _permissionService = permissionService;
         _settingService = settingService;
         _storeContext = storeContext;
+        _languageService = languageService;
     }
 
     #endregion
@@ -58,6 +56,10 @@ public class VivaPaymentsController : BasePaymentController {
             EnableInstallments = vivaPaymentSettings.EnableInstallments,
             MinInstallments = vivaPaymentSettings.MinInstallments
         };
+        await AddLocalesAsync(_languageService, model.Locales, async (locale, languageId) => {
+            locale.PaymentDescription = await _localizationService
+                .GetLocalizedSettingAsync(vivaPaymentSettings, x => x.PaymentDescription, languageId, 0, false, false);
+        });
         if (storeScope > 0) {
             model.SourceCode_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.SourceCode, storeScope);
             model.MerchantId_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.MerchantId, storeScope);
@@ -70,7 +72,6 @@ public class VivaPaymentsController : BasePaymentController {
             model.EnableInstallments_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.EnableInstallments, storeScope);
             model.MinInstallments_OverrideForStore = _settingService.SettingExists(vivaPaymentSettings, x => x.MinInstallments, storeScope);
         }
-
         return View("~/Plugins/Payments.VivaPayments/Views/Configure.cshtml", model);
     }
 
@@ -111,7 +112,11 @@ public class VivaPaymentsController : BasePaymentController {
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.EnableInstallments, model.EnableInstallments_OverrideForStore, storeScope, true);
         await _settingService.SaveSettingOverridablePerStoreAsync(vivaPaymentSettings, x => x.MinInstallments, model.MinInstallments_OverrideForStore, storeScope, true);
         //now clear settings cache
-        _settingService.ClearCache();
+        await _settingService.ClearCacheAsync();
+        foreach (var localized in model.Locales) {
+            await _localizationService.SaveLocalizedSettingAsync(vivaPaymentSettings,
+                x => x.PaymentDescription, localized.LanguageId, localized.PaymentDescription);
+        }
         _notificationService.SuccessNotification(await _localizationService.GetResourceAsync("Admin.Plugins.Saved"));
         return await Configure();
     }
