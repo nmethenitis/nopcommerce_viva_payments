@@ -21,17 +21,37 @@
                         <span asp-validation-for="PaymentTitle"></span>
                     </div>
                 </div>
-                <div class="form-group row">
-
-                    <div class="col-md-3">
-                        <nop-override-store-checkbox asp-for="PaymentDescription_OverrideForStore" asp-input="PaymentDescription" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
-                        <nop-label asp-for="PaymentDescription" />
+                @(await Html.LocalizedEditorAsync<ConfigurationModel, ConfigurationModel.ConfigurationLocalizedModel>("plugin-settings-localized",
+                @<div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-override-store-checkbox asp-for="PaymentDescription_OverrideForStore" asp-input="@Model.Locales[item].PaymentDescription" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                            <nop-label asp-for="@Model.Locales[item].PaymentDescription" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="@Model.Locales[item].PaymentDescription" asp-template="RichEditor" />
+                            <span asp-validation-for="@Model.Locales[item].PaymentDescription"></span>
+                        </div>
                     </div>
-                    <div class="col-md-9">
-                        <nop-editor asp-for="PaymentDescription" asp-template="RichEditor" />
-                        <span asp-validation-for="PaymentDescription"></span>
+                    <input type="hidden" asp-for="@Model.Locales[item].LanguageId" />
+                </div>
+                    ,
+                @<div>
+                    <div class="form-group row">
+                        <div class="col-md-3">
+                            <nop-override-store-checkbox asp-for="PaymentDescription_OverrideForStore" asp-input="PaymentDescription" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />
+                            <nop-label asp-for="PaymentDescription" />
+                        </div>
+                        <div class="col-md-9">
+                            <nop-editor asp-for="PaymentDescription" asp-template="RichEditor" />
+                            <span asp-validation-for="PaymentDescription"></span>
+                        </div>
                     </div>
                 </div>
+                    ,
+                    //localizable settings per store (overridden store settings) are not supported yet
+                    true
+                    ))
                 <div class="form-group row">
                     <div class="col-md-3">
                         <nop-override-store-checkbox asp-for="SourceCode_OverrideForStore" asp-input="SourceCode" asp-store-scope="@Model.ActiveStoreScopeConfiguration" />

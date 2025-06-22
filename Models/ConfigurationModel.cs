@@ -2,7 +2,11 @@
 using Nop.Web.Framework.Mvc.ModelBinding;
 
 namespace Nop.Plugin.Payments.VivaPayments.Models;
-public record ConfigurationModel : BaseNopModel {
+public record ConfigurationModel : BaseNopModel, ILocalizedModel<ConfigurationModel.ConfigurationLocalizedModel> {
+
+    public ConfigurationModel() {
+        Locales = new List<ConfigurationLocalizedModel>();
+    }
     public int ActiveStoreScopeConfiguration { get; set; }
 
     [NopResourceDisplayName("Plugins.Payments.VivaPayments.Fields.SourceCode")]
@@ -47,4 +51,11 @@ public record ConfigurationModel : BaseNopModel {
     [NopResourceDisplayName("Plugins.Payments.VivaPayments.Fields.MinInstallments")]
     public decimal MinInstallments { get; set; }
     public bool MinInstallments_OverrideForStore { get; set; }
+    public IList<ConfigurationLocalizedModel> Locales { get; set; }
+
+    public class ConfigurationLocalizedModel : ILocalizedLocaleModel {
+        public int LanguageId { get; set; }
+        [NopResourceDisplayName("Plugins.Payments.VivaPayments.Fields.PaymentDescription")]
+        public string PaymentDescription { get; set; }
+    }
 }
